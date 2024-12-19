@@ -38,6 +38,11 @@ const navigation = [
     href: '/dashboard/sales',
     icon: ShoppingCart,
   },
+  {
+    name: 'Utilisateurs',
+    href: '/dashboard/users',
+    icon: Users,
+  },
 ];
 
 interface SidebarProps extends React.HTMLAttributes<HTMLDivElement> {}
