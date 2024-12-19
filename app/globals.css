@@ -1,0 +1,141 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --foreground-rgb: 0, 0, 0;
+  --background-start-rgb: 214, 219, 220;
+  --background-end-rgb: 255, 255, 255;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --foreground-rgb: 255, 255, 255;
+    --background-start-rgb: 0, 0, 0;
+    --background-end-rgb: 0, 0, 0;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* Styles personnalisés pour les tableaux */
+.table-container {
+  @apply rounded-lg border bg-card shadow-sm;
+}
+
+table {
+  @apply w-full text-sm;
+}
+
+thead {
+  @apply bg-primary/5;
+}
+
+th {
+  @apply px-4 py-3 text-left font-medium text-primary;
+}
+
+td {
+  @apply px-4 py-3 text-muted-foreground;
+}
+
+tbody tr {
+  @apply border-t border-border/50 transition-colors hover:bg-accent/5;
+}
+
+tbody tr:nth-child(even) {
+  @apply bg-muted/30;
+}
+
+@layer base {
+  :root {
+    /* Couleur principale - Bleu profond élégant */
+    --mdPrimary: 210 100% 33%;
+    --mdPrimaryForeground: 210 100% 98%;
+
+    /* Couleur d'accent - Orange vif pour les actions */
+    --mdAccent: 25 95% 53%;
+    --mdAccentForeground: 25 95% 98%;
+
+    /* Fond blanc légèrement teinté pour plus de douceur */
+    --background: 210 50% 98%;
+    --foreground: 210 50% 10%;
+
+    /* Cartes avec un fond légèrement différent */
+    --card: 0 0% 100%;
+    --card-foreground: 210 50% 10%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 210 50% 10%;
+
+    /* Couleur primaire héritée de mdPrimary */
+    --primary: var(--mdPrimary);
+    --primary-foreground: var(--mdPrimaryForeground);
+
+    /* Secondaire plus contrasté */
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 210 40% 20%;
+
+    /* Texte atténué plus lisible */
+    --muted: 210 40% 96%;
+    --muted-foreground: 210 40% 40%;
+
+    /* Accent hérité de mdAccent */
+    --accent: var(--mdAccent);
+    --accent-foreground: var(--mdAccentForeground);
+
+    /* Rouge plus vif pour les erreurs */
+    --destructive: 0 100% 45%;
+    --destructive-foreground: 0 0% 98%;
+
+    /* Bordures et inputs */
+    --border: 210 40% 90%;
+    --input: 210 40% 90%;
+    --ring: var(--mdPrimary);
+
+    /* Radius par défaut */
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    /* Mode sombre avec des couleurs inversées */
+    --background: 210 50% 5%;
+    --foreground: 210 50% 98%;
+
+    --card: 210 50% 7%;
+    --card-foreground: 210 50% 98%;
+    --popover: 210 50% 7%;
+    --popover-foreground: 210 50% 98%;
+
+    /* Couleurs primaires plus lumineuses */
+    --primary: 210 100% 50%;
+    --primary-foreground: 210 100% 98%;
+
+    /* Secondaire plus sombre */
+    --secondary: 210 40% 15%;
+    --secondary-foreground: 210 40% 90%;
+
+    /* Texte atténué plus visible */
+    --muted: 210 40% 15%;
+    --muted-foreground: 210 40% 70%;
+
+    /* Accent plus vif */
+    --accent: 25 95% 53%;
+    --accent-foreground: 25 95% 98%;
+
+    /* Rouge plus visible */
+    --destructive: 0 100% 50%;
+    --destructive-foreground: 0 0% 98%;
+
+    /* Bordures et inputs plus visibles */
+    --border: 210 40% 20%;
+    --input: 210 40% 20%;
+    --ring: 210 100% 50%;
+  }
+}
