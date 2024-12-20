@@ -22,6 +22,8 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useProducts } from '@/hooks/use-products';
+import { useToast } from '@/hooks/use-toast';
+import { showToast } from '@/lib/toast';
 import { Plus, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { Sale } from '@/types/sale';
@@ -49,6 +51,7 @@ interface SaleEditFormProps {
 export function SaleEditForm({ sale, onSuccess }: SaleEditFormProps) {
   const { products } = useProducts();
   const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
 
   const form = useForm<SaleFormValues>({
     resolver: zodResolver(saleSchema),
@@ -81,9 +84,17 @@ export function SaleEditForm({ sale, onSuccess }: SaleEditFormProps) {
         ...values,
         totalAmount,
       });
+      toast(showToast.success({
+        title: 'Vente modifiée avec succès',
+        description: 'Les modifications ont été enregistrées'
+      }));
       onSuccess();
     } catch (error) {
       console.error('Failed to update sale:', error);
+      toast(showToast.error({
+        title: 'Erreur',
+        description: error instanceof Error ? error.message : 'Une erreur est survenue lors de la modification'
+      }));
     } finally {
       setIsLoading(false);
     }

@@ -18,6 +18,8 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Category } from '@/types/category';
 import { CategoryService } from '@/services/category-service';
+import { useToast } from '@/hooks/use-toast';
+import { showToast } from '@/lib/toast';
 
 const categorySchema = z.object({
   name: z.string().min(2, 'Le nom doit contenir au moins 2 caractères'),
@@ -40,6 +42,7 @@ export function CategoryDrawer({
   mode 
 }: CategoryDrawerProps) {
   const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
 
   const form = useForm<z.infer<typeof categorySchema>>({
     resolver: zodResolver(categorySchema),
@@ -64,23 +67,34 @@ export function CategoryDrawer({
     }
   }, [category, mode, form]);
 
-  async function onSubmit(values: z.infer<typeof categorySchema>) {
+  const handleSubmit = async (values: z.infer<typeof categorySchema>) => {
     try {
       setIsLoading(true);
-      // TODO: Implement category creation/update
       if (mode === 'create') {
         await CategoryService.createCategory(values);
+        toast(showToast.success({
+          title: 'Catégorie créée avec succès',
+          description: 'La nouvelle catégorie a été ajoutée'
+        }));
       } else if (mode === 'edit') {
         await CategoryService.updateCategory(category!.id, values);
+        toast(showToast.success({
+          title: 'Catégorie modifiée avec succès',
+          description: 'Les modifications ont été enregistrées'
+        }));
       }
       onSuccess();
       onClose();
     } catch (error) {
       console.error('Failed to save category:', error);
+      toast(showToast.error({
+        title: 'Erreur',
+        description: error instanceof Error ? error.message : 'Une erreur est survenue lors de l\'enregistrement'
+      }));
     } finally {
       setIsLoading(false);
     }
-  }
+  };
 
   const title =
     mode === 'create'
@@ -101,7 +115,7 @@ export function CategoryDrawer({
         <div className="space-y-4 py-4">
           {mode === 'create' && (
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
                 <FormField
                   control={form.control}
                   name="name"
@@ -138,7 +152,7 @@ export function CategoryDrawer({
           )}
           {mode === 'edit' && category && (
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
                 <FormField
                   control={form.control}
                   name="name"

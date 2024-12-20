@@ -15,7 +15,6 @@ import {
 import { Input } from '@/components/ui/input';
 import { UserService } from '@/services/user-service';
 import { useToast } from '@/hooks/use-toast';
-import { ResetPasswordDto } from '@/types/user';
 
 const resetPasswordSchema = z.object({
   newPassword: z.string()
@@ -27,6 +26,8 @@ const resetPasswordSchema = z.object({
   path: ["confirmPassword"],
 });
 
+type ResetPasswordFormValues = z.infer<typeof resetPasswordSchema>;
+
 interface ResetPasswordFormProps {
   userId: string;
   onSuccess: () => void;
@@ -34,7 +35,7 @@ interface ResetPasswordFormProps {
 
 export function ResetPasswordForm({ userId, onSuccess }: ResetPasswordFormProps) {
   const { toast } = useToast();
-  const form = useForm<ResetPasswordDto>({
+  const form = useForm<ResetPasswordFormValues>({
     resolver: zodResolver(resetPasswordSchema),
     defaultValues: {
       newPassword: '',
@@ -42,11 +43,12 @@ export function ResetPasswordForm({ userId, onSuccess }: ResetPasswordFormProps)
     },
   });
 
-  const onSubmit = async (data: ResetPasswordDto) => {
+  const onSubmit = async (data: ResetPasswordFormValues) => {
     try {
-      await UserService.resetPassword(userId, data);
+      await UserService.resetPassword(userId, data.newPassword);
       toast({
         title: 'Mot de passe réinitialisé avec succès',
+        variant: 'success'
       });
       onSuccess();
     } catch (error) {

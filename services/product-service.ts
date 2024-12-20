@@ -38,6 +38,8 @@ export const ProductService = {
     categoryId: string;
     supplierId: string;
   }): Promise<Product> {
+    console.log(data);
+    
     const response = await fetch(`${API_URL}/products`, {
       method: 'POST',
       headers: getAuthHeader(),

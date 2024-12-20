@@ -1,5 +1,10 @@
 import { API_URL, getAuthHeader } from '@/lib/config';
-import { User, CreateUserData, UpdateUserData, ResetPasswordDto } from '@/types/user';
+import { User, CreateUserData, UpdateUserData } from '@/types/user';
+
+interface ResetPasswordDto {
+  userId: string;
+  newPassword: string;
+}
 
 export class UserService {
   static async getUsers(): Promise<User[]> {
@@ -70,16 +75,15 @@ export class UserService {
     }
   }
 
-  static async resetPassword(id: string, data: ResetPasswordDto): Promise<void> {
-    const response = await fetch(`${API_URL}/users/${id}/reset-password`, {
+  static async resetPassword(userId: string, newPassword: string): Promise<void> {
+    const response = await fetch(`${API_URL}/auth/reset-password`, {
       method: 'POST',
       headers: getAuthHeader(),
-      body: JSON.stringify(data),
+      body: JSON.stringify({ userId, newPassword }),
     });
 
     if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message);
+      throw new Error('Failed to reset password');
     }
   }
 }

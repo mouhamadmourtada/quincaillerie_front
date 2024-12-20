@@ -9,10 +9,12 @@ import {
 } from '@/components/ui/sheet';
 import { SaleCreateForm } from './forms/sale-create-form';
 import { SaleEditForm } from './forms/sale-edit-form';
-import { SaleDetails } from './sale-details';
+import { SaleDetailsTable } from './sale-details-table';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { Badge } from '@/components/ui/badge';
+import { useToast } from '@/hooks/use-toast';
+import { showToast } from '@/lib/toast';
 
 interface SaleDrawerProps {
   sale: Sale | null;
@@ -35,6 +37,8 @@ export function SaleDrawer({
     view: 'Détails de la vente',
   }[mode];
 
+  const toast = useToast();
+
   return (
     <Sheet open={open} onOpenChange={onClose}>
       <SheetContent
@@ -51,7 +55,7 @@ export function SaleDrawer({
         )}
         {mode === 'view' && sale && (
           <div className="py-6">
-            <SaleDetails sale={sale} onUpdate={onSuccess} />
+            <SaleDetailsTable sale={sale} onUpdate={onSuccess} />
           </div>
         )}
       </SheetContent>

@@ -20,8 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { UserService } from '@/services/user-service';
-import { useToast } from '@/hooks/use-toast';
+import { useState } from 'react';
 
 const userFormSchema = z.object({
   firstname: z.string().min(2, 'Le prénom doit contenir au moins 2 caractères'),
@@ -38,11 +37,11 @@ const userFormSchema = z.object({
 type UserFormValues = z.infer<typeof userFormSchema>;
 
 interface UserCreateFormProps {
-  onSuccess: () => void;
+  onSaved: (data: UserFormValues) => Promise<void>;
 }
 
-export function UserCreateForm({ onSuccess }: UserCreateFormProps) {
-  const { toast } = useToast();
+export function UserCreateForm({ onSaved }: UserCreateFormProps) {
+  const [isLoading, setIsLoading] = useState(false);
 
   const form = useForm<UserFormValues>({
     resolver: zodResolver(userFormSchema),
@@ -59,27 +58,12 @@ export function UserCreateForm({ onSuccess }: UserCreateFormProps) {
 
   const onSubmit = async (data: UserFormValues) => {
     try {
-      console.log('Date de naissance avant envoi:', data.date_naissance);
-      const userData = {
-        ...data,
-        username: data.email,
-        date_naissance: new Date(data.date_naissance + 'T00:00:00Z'),
-      };
-      console.log('Date de naissance après conversion:', userData.date_naissance);
-      
-      await UserService.createUser(userData);
-
-      toast({
-        title: 'Utilisateur créé avec succès',
-      });
-      onSuccess();
+      setIsLoading(true);
+      await onSaved(data);
     } catch (error) {
       console.error('Error:', error);
-      toast({
-        variant: 'destructive',
-        title: 'Erreur',
-        description: error instanceof Error ? error.message : 'Une erreur est survenue',
-      });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -183,8 +167,8 @@ export function UserCreateForm({ onSuccess }: UserCreateFormProps) {
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  <SelectItem value="admin">Administrateur</SelectItem>
                   <SelectItem value="user">Utilisateur</SelectItem>
+                  <SelectItem value="admin">Administrateur</SelectItem>
                 </SelectContent>
               </Select>
               <FormMessage />
@@ -192,9 +176,9 @@ export function UserCreateForm({ onSuccess }: UserCreateFormProps) {
           )}
         />
 
-        <div className="flex justify-end pt-4">
-          <Button type="submit">Créer</Button>
-        </div>
+        <Button type="submit" disabled={isLoading}>
+          {isLoading ? 'Création...' : 'Créer'}
+        </Button>
       </form>
     </Form>
   );

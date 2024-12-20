@@ -25,6 +25,8 @@ import { useProducts } from '@/hooks/use-products';
 import { Plus, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useToast } from '@/hooks/use-toast';
+import { showToast } from '@/lib/toast';
 
 const saleItemSchema = z.object({
   productId: z.string().min(1, 'Produit requis'),
@@ -48,6 +50,7 @@ interface SaleCreateFormProps {
 export function SaleCreateForm({ onSuccess }: SaleCreateFormProps) {
   const { products, isLoading: isLoadingProducts } = useProducts();
   const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
 
   const form = useForm<SaleFormValues>({
     resolver: zodResolver(saleSchema),
@@ -79,9 +82,17 @@ export function SaleCreateForm({ onSuccess }: SaleCreateFormProps) {
         paymentDate: null,
         status: 'PENDING',
       });
+      toast(showToast.success({
+        title: 'Vente créée avec succès',
+        description: 'La nouvelle vente a été enregistrée'
+      }));
       onSuccess();
     } catch (error) {
       console.error('Failed to create sale:', error);
+      toast(showToast.error({
+        title: 'Erreur',
+        description: error instanceof Error ? error.message : 'Une erreur est survenue lors de la création'
+      }));
     } finally {
       setIsLoading(false);
     }

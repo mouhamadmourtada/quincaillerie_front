@@ -22,21 +22,22 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Category } from '@/types/category';
-import { ProductService } from '@/services/product-service';
 import { useToast } from '@/hooks/use-toast';
 
 const productSchema = z.object({
   name: z.string().min(2, 'Le nom doit contenir au moins 2 caractères'),
-  category: z.string().min(1, 'Veuillez sélectionner une catégorie'),
-  price: z.string().transform((val) => parseFloat(val)),
-  stock: z.string().transform((val) => parseInt(val)),
+  description: z.string().optional().default(''),
+  categoryId: z.string().min(1, 'Veuillez sélectionner une catégorie'),
+  supplierId: z.string().optional().default(''),
+  price: z.string().min(1, 'Le prix est requis').transform((val) => Number(val)),
+  stock: z.string().min(1, 'Le stock est requis').transform((val) => Number(val)),
 });
 
 type ProductFormValues = z.infer<typeof productSchema>;
 
 interface ProductCreateFormProps {
   categories: Category[];
-  onSuccess: () => void;
+  onSuccess: (data: ProductFormValues) => Promise<void>;
 }
 
 export function ProductCreateForm({ categories, onSuccess }: ProductCreateFormProps) {
@@ -47,7 +48,9 @@ export function ProductCreateForm({ categories, onSuccess }: ProductCreateFormPr
     resolver: zodResolver(productSchema),
     defaultValues: {
       name: '',
-      category: '',
+      description: '',
+      categoryId: '',
+      supplierId: '',
       price: '',
       stock: '',
     },
@@ -56,21 +59,13 @@ export function ProductCreateForm({ categories, onSuccess }: ProductCreateFormPr
   const onSubmit = async (data: ProductFormValues) => {
     try {
       setIsLoading(true);
-      await ProductService.createProduct({
-        name: data.name,
-        categoryId: data.category,
-        price: data.price,
-        stock: data.stock,
-      });
-      toast({
-        title: 'Succès',
-        description: 'Le produit a été créé avec succès',
-      });
-      onSuccess();
+      await onSuccess(data);
+      form.reset();
     } catch (error) {
+      console.error('Error in form submission:', error);
       toast({
         title: 'Erreur',
-        description: 'Une erreur est survenue lors de la création du produit',
+        description: error instanceof Error ? error.message : 'Une erreur est survenue lors de la création du produit',
         variant: 'destructive',
       });
     } finally {
@@ -97,14 +92,28 @@ export function ProductCreateForm({ categories, onSuccess }: ProductCreateFormPr
 
         <FormField
           control={form.control}
-          name="category"
+          name="description"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Description</FormLabel>
+              <FormControl>
+                <Input placeholder="Description du produit" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="categoryId"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Catégorie</FormLabel>
               <Select onValueChange={field.onChange} defaultValue={field.value}>
                 <FormControl>
                   <SelectTrigger>
-                    <SelectValue placeholder="Sélectionnez une catégorie" />
+                    <SelectValue placeholder="Sélectionner une catégorie" />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
@@ -127,7 +136,7 @@ export function ProductCreateForm({ categories, onSuccess }: ProductCreateFormPr
             <FormItem>
               <FormLabel>Prix</FormLabel>
               <FormControl>
-                <Input type="number" step="0.01" placeholder="0.00" {...field} />
+                <Input type="number" step="0.01" placeholder="Prix" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -141,7 +150,7 @@ export function ProductCreateForm({ categories, onSuccess }: ProductCreateFormPr
             <FormItem>
               <FormLabel>Stock</FormLabel>
               <FormControl>
-                <Input type="number" placeholder="0" {...field} />
+                <Input type="number" placeholder="Stock" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -149,7 +158,7 @@ export function ProductCreateForm({ categories, onSuccess }: ProductCreateFormPr
         />
 
         <Button type="submit" disabled={isLoading}>
-          {isLoading ? 'Création...' : 'Créer le produit'}
+          {isLoading ? 'Création...' : 'Créer'}
         </Button>
       </form>
     </Form>

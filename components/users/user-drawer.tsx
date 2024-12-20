@@ -1,11 +1,14 @@
 'use client';
 
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { UserCreateForm } from './forms/user-create-form';
 import { UserEditForm } from './forms/user-edit-form';
 import { UserDetails } from './user-details';
 import type { User } from '@/types/user';
+import { useToast } from '@/hooks/use-toast';
+import { showToast } from '@/lib/toast';
+import { useState } from 'react';
+import { UserService } from '@/services/user-service';
 
 interface UserDrawerProps {
   user?: User;
@@ -16,7 +19,65 @@ interface UserDrawerProps {
 }
 
 export function UserDrawer({ user, open, onClose, onSaved, mode }: UserDrawerProps) {
-  const isEditing = !!user;
+  const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
+
+  const handleCreateSubmit = async (formData: UserFormValues) => {
+    try {
+      setIsLoading(true);
+      const userData = {
+        ...formData,
+        username: formData.email,
+      };
+      
+      console.log('Creating user with data:', userData);
+      
+      await UserService.createUser(userData);
+      toast({
+        title: 'Utilisateur créé avec succès',
+        description: 'Le nouvel utilisateur a été ajouté',
+        variant: 'success'
+      });
+      onClose();
+      onSaved();
+    } catch (error) {
+      console.error('Failed to create user:', error);
+      toast({
+        title: 'Erreur',
+        description: error instanceof Error ? error.message : 'Une erreur est survenue lors de la création',
+        variant: 'destructive'
+      });
+      throw error; // Propager l'erreur pour que le formulaire puisse la gérer
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleEditSubmit = async (formData: any) => {
+    try {
+      setIsLoading(true);
+      
+      console.log('Updating user with data:', formData);
+      
+      await UserService.updateUser(user!.id, formData);
+      toast({
+        title: 'Utilisateur modifié avec succès',
+        description: 'Les modifications ont été enregistrées',
+        variant: 'success'
+      });
+      onClose();
+      onSaved();
+    } catch (error) {
+      console.error('Failed to update user:', error);
+      toast({
+        title: 'Erreur',
+        description: error instanceof Error ? error.message : 'Une erreur est survenue lors de la modification',
+        variant: 'destructive'
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <Sheet open={open} onOpenChange={onClose}>
@@ -32,12 +93,12 @@ export function UserDrawer({ user, open, onClose, onSaved, mode }: UserDrawerPro
         </SheetHeader>
         <div className="mt-6">
           {mode === 'create' ? (
-            <UserCreateForm onSuccess={onSaved} />
+            <UserCreateForm onSaved={handleCreateSubmit} />
           ) : user ? (
             mode === 'details' ? (
               <UserDetails user={user} />
             ) : (
-              <UserEditForm user={user} onSuccess={onSaved} />
+              <UserEditForm user={user} onSaved={handleEditSubmit} />
             )
           ) : null}
         </div>

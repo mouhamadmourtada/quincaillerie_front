@@ -18,6 +18,8 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Supplier } from '@/types/supplier';
 import { SupplierService } from '@/services/supplier-service';
+import { useToast } from '@/hooks/use-toast';
+import { showToast } from '@/lib/toast';
 
 const supplierSchema = z.object({
   name: z.string().min(2, 'Le nom doit contenir au moins 2 caractères'),
@@ -42,6 +44,7 @@ export function SupplierDrawer({
   onSuccess 
 }: SupplierDrawerProps) {
   const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
 
   const form = useForm<z.infer<typeof supplierSchema>>({
     resolver: zodResolver(supplierSchema),
@@ -72,23 +75,34 @@ export function SupplierDrawer({
     }
   }, [supplier, mode, form]);
 
-  async function onSubmit(values: z.infer<typeof supplierSchema>) {
+  const handleSubmit = async (values: z.infer<typeof supplierSchema>) => {
     try {
       setIsLoading(true);
-      // TODO: Implement supplier creation/update
       if (mode === 'create') {
         await SupplierService.createSupplier(values);
+        toast(showToast.success({
+          title: 'Fournisseur créé avec succès',
+          description: 'Le nouveau fournisseur a été ajouté'
+        }));
       } else if (mode === 'edit') {
         await SupplierService.updateSupplier(supplier!.id, values);
+        toast(showToast.success({
+          title: 'Fournisseur modifié avec succès',
+          description: 'Les modifications ont été enregistrées'
+        }));
       }
       onSuccess();
       onClose();
     } catch (error) {
       console.error('Failed to save supplier:', error);
+      toast(showToast.error({
+        title: 'Erreur',
+        description: error instanceof Error ? error.message : 'Une erreur est survenue lors de l\'enregistrement'
+      }));
     } finally {
       setIsLoading(false);
     }
-  }
+  };
 
   const title =
     mode === 'create'
@@ -109,7 +123,7 @@ export function SupplierDrawer({
         <div className="space-y-4 py-4">
           {mode === 'create' && (
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 mt-4">
+              <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4 mt-4">
                 <FormField
                   control={form.control}
                   name="name"
@@ -174,7 +188,7 @@ export function SupplierDrawer({
           )}
           {mode === 'edit' && supplier && (
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 mt-4">
+              <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4 mt-4">
                 <FormField
                   control={form.control}
                   name="name"

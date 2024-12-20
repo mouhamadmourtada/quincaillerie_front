@@ -10,6 +10,9 @@ import { Category } from '@/types/category';
 import { ProductCreateForm } from './forms/product-create-form';
 import { ProductEditForm } from './forms/product-edit-form';
 import { ProductDetails } from './product-details';
+import { useToast } from '@/hooks/use-toast';
+import { showToast } from '@/lib/toast';
+import { ProductService } from '@/services/product-service';
 
 interface ProductDrawerProps {
   product?: Product;
@@ -35,6 +38,9 @@ export function ProductDrawer({
       ? 'Modifier le Produit'
       : 'Détails du Produit';
 
+  const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
+
   return (
     <Sheet open={open} onOpenChange={onClose}>
       <SheetContent
@@ -48,14 +54,52 @@ export function ProductDrawer({
           {mode === 'create' && (
             <ProductCreateForm
               categories={categories}
-              onSuccess={onSuccess}
+              onSuccess={async (values) => {
+                try {
+                  setIsLoading(true);
+                  await ProductService.createProduct(values);
+                  toast(showToast.success({
+                    title: 'Produit créé avec succès',
+                    description: 'Le nouveau produit a été ajouté'
+                  }));
+                  onSuccess();
+                  onClose();
+                } catch (error) {
+                  console.error('Failed to save product:', error);
+                  toast(showToast.error({
+                    title: 'Erreur',
+                    description: error instanceof Error ? error.message : 'Une erreur est survenue lors de l\'enregistrement'
+                  }));
+                } finally {
+                  setIsLoading(false);
+                }
+              }}
             />
           )}
           {mode === 'edit' && product && (
             <ProductEditForm
               product={product}
               categories={categories}
-              onSuccess={onSuccess}
+              onSuccess={async (values) => {
+                try {
+                  setIsLoading(true);
+                  await ProductService.updateProduct(product.id, values);
+                  toast(showToast.success({
+                    title: 'Produit modifié avec succès',
+                    description: 'Les modifications ont été enregistrées'
+                  }));
+                  onSuccess();
+                  onClose();
+                } catch (error) {
+                  console.error('Failed to save product:', error);
+                  toast(showToast.error({
+                    title: 'Erreur',
+                    description: error instanceof Error ? error.message : 'Une erreur est survenue lors de l\'enregistrement'
+                  }));
+                } finally {
+                  setIsLoading(false);
+                }
+              }}
             />
           )}
           {mode === 'view' && product && (

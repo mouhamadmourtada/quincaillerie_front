@@ -2,6 +2,7 @@ import { Sale, SaleItem, PaymentType } from '@/types/sale';
 import { Product } from '@/types/product';
 import { API_URL, getAuthHeader } from '@/lib/config';
 import { ProductService } from './product-service';
+import { get } from 'http';
 
 interface CreateSaleData {
     customerName: string;
@@ -175,7 +176,20 @@ export const SaleService = {
       throw new Error('Erreur lors du marquage de la vente comme payée');
     }
     return response.json();
-  }
+  },
+
+  async cancelSale(id: string) {
+    const response = await fetch(`${API_URL}/sales/${id}/cancel`, {
+      method: 'POST',
+      headers: getAuthHeader(),
+    });
+
+    if (!response.ok) {
+      throw new Error('Erreur lors de l\'annulation de la vente');
+    }
+
+    return response.json();
+  },
 };
 
 // Export des fonctions individuelles pour la compatibilité

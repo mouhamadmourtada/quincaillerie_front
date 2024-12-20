@@ -22,6 +22,7 @@ import {
 } from '@/components/ui/select';
 import { UserService } from '@/services/user-service';
 import { useToast } from '@/hooks/use-toast';
+import { showToast } from '@/lib/toast';
 import { User } from '@/types/user';
 import { format, parseISO } from 'date-fns';
 
@@ -41,10 +42,10 @@ type UserFormValues = z.infer<typeof userFormSchema>;
 
 interface UserEditFormProps {
   user: User;
-  onSuccess: () => void;
+  onSaved: () => void;
 }
 
-export function UserEditForm({ user, onSuccess }: UserEditFormProps) {
+export function UserEditForm({ user, onSaved }: UserEditFormProps) {
   const { toast } = useToast();
 
   const formatDateForInput = (date: string | Date | null) => {
@@ -85,17 +86,19 @@ export function UserEditForm({ user, onSuccess }: UserEditFormProps) {
       console.log('Date de naissance après conversion:', userData.date_naissance);
 
       await UserService.updateUser(user.id, userData);
-
+      console.log('User updated successfully');
       toast({
         title: 'Utilisateur modifié avec succès',
+        description: 'Les modifications ont été enregistrées',
+        variant: 'success'
       });
-      onSuccess();
+      onSaved();
     } catch (error) {
       console.error('Error:', error);
       toast({
-        variant: 'destructive',
         title: 'Erreur',
         description: error instanceof Error ? error.message : 'Une erreur est survenue',
+        variant: 'destructive'
       });
     }
   };

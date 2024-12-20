@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { UserService } from '@/services/user-service';
 import { useToast } from '@/hooks/use-toast';
+import { showToast } from '@/lib/toast';
 import type { User } from '@/types/user';
 import { UserDrawer } from './user-drawer';
 import { Eye, Pencil, Trash } from 'lucide-react';
@@ -42,11 +43,10 @@ export function UserTable() {
       setUsers(data);
     } catch (error) {
       console.error('Error fetching users:', error);
-      toast({
-        variant: 'destructive',
+      toast(showToast.error({
         title: 'Erreur',
-        description: 'Impossible de récupérer la liste des utilisateurs',
-      });
+        description: 'Impossible de récupérer la liste des utilisateurs'
+      }));
     } finally {
       setIsLoading(false);
     }
@@ -79,17 +79,17 @@ export function UserTable() {
 
     try {
       await UserService.deleteUser(userToDelete.id);
-      toast({
+      toast(showToast.success({
         title: 'Utilisateur supprimé avec succès',
-      });
+        description: 'L\'utilisateur a été supprimé de la base de données'
+      }));
       fetchUsers();
     } catch (error) {
       console.error('Error:', error);
-      toast({
-        variant: 'destructive',
+      toast(showToast.error({
         title: 'Erreur',
-        description: 'Une erreur est survenue lors de la suppression',
-      });
+        description: 'Une erreur est survenue lors de la suppression'
+      }));
     } finally {
       setUserToDelete(null);
     }
