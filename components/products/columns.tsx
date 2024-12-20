@@ -5,6 +5,7 @@ import { Product } from '@/types/product';
 import { formatCurrency } from '@/lib/formatters';
 import { Button } from '@/components/ui/button';
 import { Eye, Pencil } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 
 export const columns: ColumnDef<Product>[] = [
   {
@@ -14,6 +15,11 @@ export const columns: ColumnDef<Product>[] = [
   {
     accessorKey: 'category',
     header: 'Catégorie',
+    cell: ({ row }) => (
+      <Badge variant="outline">
+        {row.original.category?.name || 'Non catégorisé'}
+      </Badge>
+    ),
   },
   {
     accessorKey: 'price',
@@ -23,6 +29,14 @@ export const columns: ColumnDef<Product>[] = [
   {
     accessorKey: 'stock',
     header: 'Stock',
+    cell: ({ getValue }) => {
+      const stock = getValue<number>();
+      return (
+        <Badge variant={stock > 10 ? 'success' : 'destructive'}>
+          {stock}
+        </Badge>
+      );
+    },
   },
   {
     id: 'actions',

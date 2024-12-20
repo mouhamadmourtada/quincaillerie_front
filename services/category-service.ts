@@ -1,3 +1,4 @@
+import { API_URL, getAuthHeader } from '@/lib/config';
 import { Category } from '@/types/category';
 
 // Données mockées pour le développement
@@ -18,48 +19,75 @@ const MOCK_CATEGORIES: Category[] = [
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 export const CategoryService = {
-  async getCategories(): Promise<Category[]> {
-    await delay(500);
-    return MOCK_CATEGORIES;
+  async getCategories(name?: string): Promise<Category[]> {
+    const url = new URL(`${API_URL}/categories`);
+    if (name) url.searchParams.append('name', name);
+
+    const response = await fetch(url.toString(), {
+      headers: getAuthHeader(),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message);
+    }
+
+    return response.json();
   },
 
   async createCategory(category: Omit<Category, 'id'>): Promise<Category> {
-    await delay(500);
-    const newCategory = {
-      id: Math.random().toString(),
-      ...category
-    };
-    
-    MOCK_CATEGORIES.push(newCategory);
-    return newCategory;
-  },
+    const response = await fetch(`${API_URL}/categories`, {
+      method: 'POST',
+      headers: getAuthHeader(),
+      body: JSON.stringify(category),
+    });
 
-  async updateCategory(id: string, category: Partial<Category>): Promise<Category> {
-    await delay(500);
-    const index = MOCK_CATEGORIES.findIndex(c => c.id === id);
-    if (index === -1) throw new Error('Category not found');
-    
-    const updatedCategory = {
-      ...MOCK_CATEGORIES[index],
-      ...category,
-      id
-    };
-    MOCK_CATEGORIES[index] = updatedCategory;
-    return updatedCategory;
-  },
-
-  async deleteCategory(id: string): Promise<void> {
-    await delay(500);
-    const index = MOCK_CATEGORIES.findIndex(c => c.id === id);
-    if (index !== -1) {
-      MOCK_CATEGORIES.splice(index, 1);
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message);
     }
+
+    return response.json();
   },
 
   async getCategoryById(id: string): Promise<Category | null> {
-    await delay(500);
-    const category = MOCK_CATEGORIES.find(c => c.id === id);
-    return category || null;
+    const response = await fetch(`${API_URL}/categories/${id}`, {
+      headers: getAuthHeader(),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message);
+    }
+
+    return response.json();
+  },
+
+  async updateCategory(id: string, category: Partial<Category>): Promise<Category> {
+    const response = await fetch(`${API_URL}/categories/${id}`, {
+      method: 'PUT',
+      headers: getAuthHeader(),
+      body: JSON.stringify(category),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message);
+    }
+
+    return response.json();
+  },
+
+  async deleteCategory(id: string): Promise<void> {
+    const response = await fetch(`${API_URL}/categories/${id}`, {
+      method: 'DELETE',
+      headers: getAuthHeader(),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message);
+    }
   }
 };
 

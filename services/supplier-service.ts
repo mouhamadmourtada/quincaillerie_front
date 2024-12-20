@@ -1,3 +1,4 @@
+import { API_URL, getAuthHeader } from '@/lib/config';
 import { Supplier } from '@/types/supplier';
 
 // Données mockées pour le développement
@@ -23,46 +24,71 @@ const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 export const SupplierService = {
   async getSuppliers(): Promise<Supplier[]> {
-    await delay(500);
-    return MOCK_SUPPLIERS;
+    const response = await fetch(`${API_URL}/suppliers`, {
+      headers: getAuthHeader(),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message);
+    }
+
+    return response.json();
   },
 
-  async createSupplier(supplier: Omit<Supplier, 'id'>): Promise<Supplier> {
-    await delay(500);
-    const newSupplier = {
-      id: Math.random().toString(),
-      ...supplier
-    };
-    MOCK_SUPPLIERS.push(newSupplier);
-    return newSupplier;
+  async createSupplier(data: Omit<Supplier, 'id'>): Promise<Supplier> {
+    const response = await fetch(`${API_URL}/suppliers`, {
+      method: 'POST',
+      headers: getAuthHeader(),
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message);
+    }
+
+    return response.json();
   },
 
-  async updateSupplier(id: string, supplier: Partial<Supplier>): Promise<Supplier> {
-    await delay(500);
-    const index = MOCK_SUPPLIERS.findIndex(s => s.id === id);
-    if (index === -1) throw new Error('Supplier not found');
-    
-    const updatedSupplier = {
-      ...MOCK_SUPPLIERS[index],
-      ...supplier,
-      id
-    };
-    MOCK_SUPPLIERS[index] = updatedSupplier;
-    return updatedSupplier;
+  async getSupplier(id: string): Promise<Supplier> {
+    const response = await fetch(`${API_URL}/suppliers/${id}`, {
+      headers: getAuthHeader(),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message);
+    }
+
+    return response.json();
+  },
+
+  async updateSupplier(id: string, data: Partial<Supplier>): Promise<Supplier> {
+    const response = await fetch(`${API_URL}/suppliers/${id}`, {
+      method: 'PUT',
+      headers: getAuthHeader(),
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message);
+    }
+
+    return response.json();
   },
 
   async deleteSupplier(id: string): Promise<void> {
-    await delay(500);
-    const index = MOCK_SUPPLIERS.findIndex(s => s.id === id);
-    if (index !== -1) {
-      MOCK_SUPPLIERS.splice(index, 1);
-    }
-  },
+    const response = await fetch(`${API_URL}/suppliers/${id}`, {
+      method: 'DELETE',
+      headers: getAuthHeader(),
+    });
 
-  async getSupplierById(id: string): Promise<Supplier | null> {
-    await delay(500);
-    const supplier = MOCK_SUPPLIERS.find(s => s.id === id);
-    return supplier || null;
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message);
+    }
   }
 };
 

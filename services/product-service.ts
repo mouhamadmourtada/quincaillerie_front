@@ -1,70 +1,113 @@
+import { API_URL, getAuthHeader } from '@/lib/config';
 import { Product } from '@/types/product';
 
-// Données mockées pour le développement
-const MOCK_PRODUCTS: Product[] = [
-  {
-    id: '1',
-    name: 'Marteau de charpentier',
-    category: 'Outils',
-    price: 29.99,
-    stock: 45,
-  },
-  {
-    id: '2',
-    name: 'Tournevis cruciforme',
-    category: 'Outils',
-    price: 12.99,
-    stock: 78,
-  },
-];
-
-// Simuler un délai d'API
-const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+interface ProductFilters {
+    name?: string;
+    categoryId?: string;
+    minPrice?: number;
+    maxPrice?: number;
+}
 
 export const ProductService = {
-  async getProducts(): Promise<Product[]> {
-    await delay(500);
-    return MOCK_PRODUCTS;
-  },
-
-  async createProduct(product: Omit<Product, 'id'>): Promise<Product> {
-    await delay(500);
-    const newProduct = {
-      id: Math.random().toString(),
-      ...product
-    };
-    MOCK_PRODUCTS.push(newProduct);
-    return newProduct;
-  },
-
-  async updateProduct(id: string, product: Partial<Product>): Promise<Product> {
-    await delay(500);
-    const index = MOCK_PRODUCTS.findIndex(p => p.id === id);
-    if (index === -1) throw new Error('Product not found');
+  async getProducts(filters?: ProductFilters): Promise<Product[]> {
+    const url = new URL(`${API_URL}/products`);
     
-    const updatedProduct = {
-      ...MOCK_PRODUCTS[index],
-      ...product,
-      id
-    };
-    MOCK_PRODUCTS[index] = updatedProduct;
-    return updatedProduct;
+    if (filters) {
+        Object.entries(filters).forEach(([key, value]) => {
+            if (value !== undefined) url.searchParams.append(key, value.toString());
+        });
+    }
+
+    const response = await fetch(url.toString(), {
+        headers: getAuthHeader(),
+    });
+
+    if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message);
+    }
+
+    return response.json();
+  },
+
+  async createProduct(data: {
+    name: string;
+    description: string;
+    price: number;
+    stock: number;
+    categoryId: string;
+    supplierId: string;
+  }): Promise<Product> {
+    const response = await fetch(`${API_URL}/products`, {
+      method: 'POST',
+      headers: getAuthHeader(),
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message);
+    }
+
+    return response.json();
+  },
+
+  async getProduct(id: string): Promise<Product> {
+    const response = await fetch(`${API_URL}/products/${id}`, {
+      headers: getAuthHeader(),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message);
+    }
+
+    return response.json();
+  },
+
+  async updateProduct(id: string, data: Partial<Product>): Promise<Product> {
+    const response = await fetch(`${API_URL}/products/${id}`, {
+      method: 'PUT',
+      headers: getAuthHeader(),
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message);
+    }
+
+    return response.json();
+  },
+
+  async updateProductStock(id: string, quantity: number): Promise<Product> {
+    const response = await fetch(`${API_URL}/products/${id}/stock`, {
+      method: 'PATCH',
+      headers: getAuthHeader(),
+      body: JSON.stringify({ quantity }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message);
+    }
+
+    return response.json();
   },
 
   async deleteProduct(id: string): Promise<void> {
-    await delay(500);
-    const index = MOCK_PRODUCTS.findIndex(p => p.id === id);
-    if (index !== -1) {
-      MOCK_PRODUCTS.splice(index, 1);
-    }
-  },
+    const response = await fetch(`${API_URL}/products/${id}`, {
+      method: 'DELETE',
+      headers: getAuthHeader(),
+    });
 
-  async getProductById(id: string): Promise<Product | null> {
-    await delay(500);
-    const product = MOCK_PRODUCTS.find(p => p.id === id);
-    return product || null;
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message);
+    }
   }
 };
 
 // Export des fonctions individuelles pour la compatibilité
 export const getProducts = ProductService.getProducts;
+export const getProduct = ProductService.getProduct;

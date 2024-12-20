@@ -1,5 +1,31 @@
-import { Sale, SaleItem } from '@/types/sale';
+import { Sale, SaleItem, PaymentType } from '@/types/sale';
 import { Product } from '@/types/product';
+import { API_URL, getAuthHeader } from '@/lib/config';
+import { ProductService } from './product-service';
+
+interface CreateSaleData {
+    customerName: string;
+    customerPhone: string;
+    paymentType: PaymentType;
+    items: Array<{
+        productId: string;
+        quantity: number;
+        unitPrice: number;
+    }>;
+    status: 'PENDING' | 'PAID' | 'CANCELLED';
+}
+
+interface SaleFilters {
+    status?: string;
+    paymentType?: PaymentType;
+    startDate?: string;
+    endDate?: string;
+}
+
+interface MarkAsPaidData {
+  paymentType: PaymentType;
+  paymentDate: Date;
+}
 
 // Données mockées pour le développement
 const MOCK_SALES: Sale[] = [
@@ -33,47 +59,122 @@ const MOCK_SALES: Sale[] = [
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 export const SaleService = {
-  async getSales(): Promise<Sale[]> {
-    await delay(500);
-    return MOCK_SALES;
-  },
+  async getSales(filters?: SaleFilters): Promise<Sale[]> {
+    let url = `${API_URL}/sales`;
+    if (filters) {
+      const params = new URLSearchParams();
+      if (filters.status) params.append('status', filters.status);
+      if (filters.paymentType) params.append('paymentType', filters.paymentType);
+      if (filters.startDate) params.append('startDate', filters.startDate);
+      if (filters.endDate) params.append('endDate', filters.endDate);
+      url += `?${params.toString()}`;
+    }
 
-  async createSale(sale: Omit<Sale, 'id'>): Promise<Sale> {
-    await delay(500);
-    const newSale = {
-      id: Math.random().toString(),
-      ...sale,
-    };
-    MOCK_SALES.push(newSale);
-    return newSale;
-  },
+    const response = await fetch(url, {
+      headers: getAuthHeader(),
+    });
 
-  async updateSale(id: string, sale: Partial<Sale>): Promise<Sale> {
-    await delay(500);
-    const index = MOCK_SALES.findIndex(s => s.id === id);
-    if (index === -1) throw new Error('Sale not found');
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message);
+    }
+
+    const sales = await response.json();
     
-    const updatedSale = {
-      ...MOCK_SALES[index],
-      ...sale,
-      id,
-    };
-    MOCK_SALES[index] = updatedSale;
-    return updatedSale;
+    // Enrichir les ventes avec les noms des produits
+    for (const sale of sales) {
+      for (const item of sale.items) {
+        try {
+          const product = await ProductService.getProduct(item.productId);
+          item.productName = product.name;
+        } catch (error) {
+          console.error(`Impossible de charger le produit ${item.productId}:`, error);
+          item.productName = 'Produit inconnu';
+        }
+      }
+    }
+
+    return sales;
+  },
+
+  async getSale(id: string): Promise<Sale> {
+    const response = await fetch(`${API_URL}/sales/${id}`, {
+      headers: getAuthHeader(),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message);
+    }
+
+    const sale = await response.json();
+
+    // Enrichir la vente avec les noms des produits
+    for (const item of sale.items) {
+      try {
+        const product = await ProductService.getProduct(item.productId);
+        item.productName = product.name;
+      } catch (error) {
+        console.error(`Impossible de charger le produit ${item.productId}:`, error);
+        item.productName = 'Produit inconnu';
+      }
+    }
+
+    return sale;
+  },
+
+  async createSale(data: CreateSaleData): Promise<Sale> {
+    const response = await fetch(`${API_URL}/sales`, {
+      method: 'POST',
+      headers: getAuthHeader(),
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message);
+    }
+
+    return response.json();
+  },
+
+  async updateSale(id: string, data: Partial<Sale>): Promise<Sale> {
+    const response = await fetch(`${API_URL}/sales/${id}`, {
+      method: 'PATCH',
+      headers: getAuthHeader(),
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message);
+    }
+
+    return response.json();
   },
 
   async deleteSale(id: string): Promise<void> {
-    await delay(500);
-    const index = MOCK_SALES.findIndex(s => s.id === id);
-    if (index !== -1) {
-      MOCK_SALES.splice(index, 1);
+    const response = await fetch(`${API_URL}/sales/${id}`, {
+      method: 'DELETE',
+      headers: getAuthHeader(),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message);
     }
   },
 
-  async getSaleById(id: string): Promise<Sale | null> {
-    await delay(500);
-    const sale = MOCK_SALES.find(s => s.id === id);
-    return sale || null;
+  async markAsPaid(id: string, data: MarkAsPaidData): Promise<Sale> {
+    const response = await fetch(`${API_URL}/sales/${id}/pay`, {
+      method: 'POST',
+      headers: getAuthHeader(),
+      body: JSON.stringify(data),
+    });
+    if (!response.ok) {
+      throw new Error('Erreur lors du marquage de la vente comme payée');
+    }
+    return response.json();
   }
 };
 

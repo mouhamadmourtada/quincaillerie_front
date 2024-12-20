@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import {
   Table,
   TableBody,
@@ -9,9 +10,12 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { Pencil, Trash2 } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { Badge } from '@/components/ui/badge';
+import { UserService } from '@/services/user-service';
+import { useToast } from '@/hooks/use-toast';
+import type { User } from '@/types/user';
 import { UserDrawer } from './user-drawer';
+import { Eye, Pencil, Trash } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -22,27 +26,26 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { Badge } from '@/components/ui/badge';
-import { UserService } from '@/services/user-service';
-import { useToast } from '@/hooks/use-toast';
-import type { User } from '@/types/auth';
 
 export function UserTable() {
   const [users, setUsers] = useState<User[]>([]);
-  const [editingUser, setEditingUser] = useState<User | null>(null);
-  const [deletingUser, setDeletingUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [selectedUser, setSelectedUser] = useState<User | undefined>();
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [userToDelete, setUserToDelete] = useState<User | null>(null);
   const { toast } = useToast();
+  const [drawerMode, setDrawerMode] = useState<'create' | 'edit' | 'details'>('create');
+  const [isLoading, setIsLoading] = useState(true);
 
   const fetchUsers = async () => {
     try {
       const data = await UserService.getUsers();
       setUsers(data);
     } catch (error) {
+      console.error('Error fetching users:', error);
       toast({
         variant: 'destructive',
         title: 'Erreur',
-        description: 'Impossible de charger les utilisateurs',
+        description: 'Impossible de récupérer la liste des utilisateurs',
       });
     } finally {
       setIsLoading(false);
@@ -53,37 +56,43 @@ export function UserTable() {
     fetchUsers();
   }, []);
 
-  const handleEdit = (user: User) => {
-    setEditingUser(user);
+  const handleCreateUser = () => {
+    setSelectedUser(undefined);
+    setDrawerMode('create');
+    setIsDrawerOpen(true);
   };
 
-  const handleDelete = (user: User) => {
-    setDeletingUser(user);
+  const handleEditUser = (user: User) => {
+    setSelectedUser(user);
+    setDrawerMode('edit');
+    setIsDrawerOpen(true);
   };
 
-  const confirmDelete = async () => {
-    if (!deletingUser) return;
+  const handleViewDetails = (user: User) => {
+    setSelectedUser(user);
+    setDrawerMode('details');
+    setIsDrawerOpen(true);
+  };
+
+  const handleDeleteUser = async () => {
+    if (!userToDelete) return;
 
     try {
-      await UserService.deleteUser(deletingUser.id);
-      await fetchUsers();
+      await UserService.deleteUser(userToDelete.id);
       toast({
         title: 'Utilisateur supprimé avec succès',
       });
+      fetchUsers();
     } catch (error) {
+      console.error('Error:', error);
       toast({
         variant: 'destructive',
         title: 'Erreur',
-        description: 'Impossible de supprimer l\'utilisateur',
+        description: 'Une erreur est survenue lors de la suppression',
       });
     } finally {
-      setDeletingUser(null);
+      setUserToDelete(null);
     }
-  };
-
-  const handleUserSaved = () => {
-    fetchUsers();
-    setEditingUser(null);
   };
 
   if (isLoading) {
@@ -91,76 +100,100 @@ export function UserTable() {
   }
 
   return (
-    <div className="table-container">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Nom</TableHead>
-            <TableHead>Email</TableHead>
-            <TableHead>Rôle</TableHead>
-            <TableHead>Statut</TableHead>
-            <TableHead className="text-right">Actions</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {users.map((user) => (
-            <TableRow key={user.id}>
-              <TableCell>{user.name}</TableCell>
-              <TableCell>{user.email}</TableCell>
-              <TableCell>
-                <Badge variant={user.role === 'admin' ? 'default' : 'secondary'}>
-                  {user.role === 'admin' ? 'Administrateur' : 'Utilisateur'}
-                </Badge>
-              </TableCell>
-              <TableCell>
-                <Badge variant={user.status === 'active' ? 'success' : 'destructive'}>
-                  {user.status === 'active' ? 'Actif' : 'Inactif'}
-                </Badge>
-              </TableCell>
-              <TableCell className="text-right space-x-2">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => handleEdit(user)}
-                >
-                  <Pencil className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => handleDelete(user)}
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              </TableCell>
+    <>
+      <div className="flex justify-end mb-4">
+        <Button onClick={handleCreateUser}>Nouvel utilisateur</Button>
+      </div>
+
+      <div className="rounded-md border">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Prénom</TableHead>
+              <TableHead>Nom</TableHead>
+              <TableHead>Email</TableHead>
+              <TableHead>Rôle</TableHead>
+              <TableHead>Statut</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+          </TableHeader>
+          <TableBody>
+            {users.map((user) => (
+              <TableRow key={user.id}>
+                <TableCell>{user.firstname}</TableCell>
+                <TableCell>{user.lastname}</TableCell>
+                <TableCell>{user.email}</TableCell>
+                <TableCell>
+                  <Badge variant={user.role === 'admin' ? 'default' : 'secondary'}>
+                    {user.role === 'admin' ? 'Administrateur' : 'Utilisateur'}
+                  </Badge>
+                </TableCell>
+                <TableCell>
+                  <Badge variant={user.isActive === true ? 'success' : 'destructive'}>
+                    {user.isActive === true ? 'Actif' : 'Inactif'}
+                  </Badge>
+                </TableCell>
+                <TableCell className="text-right space-x-2">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => handleViewDetails(user)}
+                  >
+                    <Eye className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => handleEditUser(user)}
+                  >
+                    <Pencil className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setUserToDelete(user)}
+                    className="text-red-600 hover:text-red-900"
+                  >
+                    <Trash className="h-4 w-4" />
+                  </Button>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
 
-      {editingUser && (
-        <UserDrawer
-          user={editingUser}
-          open={true}
-          onClose={() => setEditingUser(null)}
-          onSaved={handleUserSaved}
-        />
-      )}
+      <UserDrawer
+        user={selectedUser}
+        open={isDrawerOpen}
+        onClose={() => setIsDrawerOpen(false)}
+        onSaved={() => {
+          fetchUsers();
+          setIsDrawerOpen(false);
+        }}
+        mode={drawerMode}
+      />
 
-      <AlertDialog open={!!deletingUser} onOpenChange={() => setDeletingUser(null)}>
+      <AlertDialog open={!!userToDelete} onOpenChange={() => setUserToDelete(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Confirmer la suppression</AlertDialogTitle>
+            <AlertDialogTitle>Êtes-vous sûr ?</AlertDialogTitle>
             <AlertDialogDescription>
-              Êtes-vous sûr de vouloir supprimer cet utilisateur ? Cette action ne peut pas être annulée.
+              Cette action ne peut pas être annulée. Cela supprimera définitivement
+              l&apos;utilisateur {userToDelete?.firstname} {userToDelete?.lastname}.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Annuler</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmDelete}>Supprimer</AlertDialogAction>
+            <AlertDialogAction
+              onClick={handleDeleteUser}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              Supprimer
+            </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
+    </>
   );
 }

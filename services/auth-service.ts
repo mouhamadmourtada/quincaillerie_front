@@ -1,52 +1,50 @@
-import { LoginCredentials, AuthResponse } from '@/types/auth';
+import { API_URL } from '@/lib/config';
 
-// Simuler une base de données d'utilisateurs
-const MOCK_USER = {
-  id: '1',
-  email: 'admin@example.com',
-  name: 'Admin User',
-  role: 'admin' as const,
-  password: 'passer', // Ne jamais stocker les mots de passe en clair en production !
-};
-
-// Simuler un délai d'API
-const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+export interface AuthResponse {
+    id: string;
+    username: string;
+    email: string;
+    role: string;
+    token: string;
+}
 
 export const AuthService = {
-  async login(credentials: LoginCredentials): Promise<AuthResponse> {
-    await delay(1000);
-
-    if (
-      credentials.email === MOCK_USER.email &&
-      credentials.password === MOCK_USER.password
-    ) {
-      return {
-        user: {
-          id: MOCK_USER.id,
-          email: MOCK_USER.email,
-          name: MOCK_USER.name,
-          role: MOCK_USER.role,
+  async login(credentials: { email: string, password: string }): Promise<AuthResponse> {
+    const response = await fetch(`${API_URL}/auth/login`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
         },
-        token: 'mock_jwt_token',
-      };
+        body: JSON.stringify(credentials),
+    });
+
+    if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message);
     }
 
-    throw new Error('Invalid credentials');
+    const data = await response.json();
+    localStorage.setItem('token', data.token);
+    // Stocker les informations de l'utilisateur
+    localStorage.setItem('user', JSON.stringify(data));
+    return data;
+  },
+
+  async getCurrentUser(): Promise<AuthResponse | null> {
+    const userStr = localStorage.getItem('user');
+    if (!userStr) return null;
+
+    try {
+        return JSON.parse(userStr);
+    } catch {
+        localStorage.removeItem('user');
+        localStorage.removeItem('token');
+        return null;
+    }
   },
 
   async logout(): Promise<void> {
-    await delay(500);
-    // Simuler la déconnexion
-  },
-
-  async getCurrentUser(): Promise<AuthResponse['user'] | null> {
-    await delay(500);
-    // Simuler la récupération de l'utilisateur connecté
-    return {
-      id: MOCK_USER.id,
-      email: MOCK_USER.email,
-      name: MOCK_USER.name,
-      role: MOCK_USER.role,
-    };
-  },
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+  }
 };

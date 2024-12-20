@@ -8,13 +8,13 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import { formatCurrency } from '@/lib/formatters';
 
 interface ProductDetailsProps {
   product: Product;
-  category: { id: string; name: string };
 }
 
-export function ProductDetails({ product, category }: ProductDetailsProps) {
+export function ProductDetails({ product }: ProductDetailsProps) {
   return (
     <Card>
       <CardHeader>
@@ -25,20 +25,26 @@ export function ProductDetails({ product, category }: ProductDetailsProps) {
         <div className="grid grid-cols-2 gap-4">
           <div>
             <p className="text-sm font-medium text-muted-foreground">Catégorie</p>
-            <p>{category.name}</p>
+            <p>{product.category?.name || 'Non catégorisé'}</p>
           </div>
           <div>
             <p className="text-sm font-medium text-muted-foreground">Prix</p>
-            <p>{product.price.toFixed(2)} €</p>
+            <p>{formatCurrency(Number(product.price || 0))}</p>
           </div>
           <div>
             <p className="text-sm font-medium text-muted-foreground">Stock</p>
-            <p>{product.stock}</p>
+            <p>{product.stock || 0}</p>
           </div>
           <div>
             <p className="text-sm font-medium text-muted-foreground">ID</p>
             <p className="text-sm font-mono">{product.id}</p>
           </div>
+          {product.supplier && (
+            <div>
+              <p className="text-sm font-medium text-muted-foreground">Fournisseur</p>
+              <p>{product.supplier.name}</p>
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>

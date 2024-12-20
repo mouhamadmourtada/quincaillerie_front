@@ -12,6 +12,9 @@ interface ProductDataTableProps {
 }
 
 export function DataTable({ columns, data, onEdit, onView }: ProductDataTableProps) {
+
+  
+
   return (
     <BaseDataTable
       columns={columns}

@@ -43,7 +43,6 @@ export function LoginForm() {
     try {
       setIsLoading(true);
       const response = await AuthService.login(values);
-      localStorage.setItem('token', response.token);
       router.push('/dashboard');
     } catch (error) {
       console.error('Erreur lors de la connexion:', error);

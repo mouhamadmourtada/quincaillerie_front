@@ -2,6 +2,7 @@ export type PaymentType = 'CASH' | 'CARD' | 'TRANSFER';
 
 export interface SaleItem {
   productId: string;
+  productName?: string;
   quantity: number;
   unitPrice: number;
   totalPrice: number;

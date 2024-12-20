@@ -24,6 +24,7 @@ import {
 import { useProducts } from '@/hooks/use-products';
 import { Plus, Trash2 } from 'lucide-react';
 import { useState } from 'react';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const saleItemSchema = z.object({
   productId: z.string().min(1, 'Produit requis'),
@@ -45,7 +46,7 @@ interface SaleCreateFormProps {
 }
 
 export function SaleCreateForm({ onSuccess }: SaleCreateFormProps) {
-  const { products } = useProducts();
+  const { products, isLoading: isLoadingProducts } = useProducts();
   const [isLoading, setIsLoading] = useState(false);
 
   const form = useForm<SaleFormValues>({
@@ -171,23 +172,27 @@ export function SaleCreateForm({ onSuccess }: SaleCreateFormProps) {
                 name={`items.${index}.productId`}
                 render={({ field }) => (
                   <FormItem className="flex-1">
-                    <Select
-                      onValueChange={(value) => handleProductChange(value, index)}
-                      value={field.value}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Sélectionner un produit" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {products.map((product) => (
-                          <SelectItem key={product.id} value={product.id}>
-                            {product.name} - {product.price}€
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    {isLoadingProducts ? (
+                      <Skeleton className="h-10 w-full" />
+                    ) : (
+                      <Select
+                        onValueChange={(value) => handleProductChange(value, index)}
+                        value={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Sélectionner un produit" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {products.map((product) => (
+                            <SelectItem key={product.id} value={product.id}>
+                              {product.name} - {product.price}€
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    )}
                     <FormMessage />
                   </FormItem>
                 )}
@@ -227,8 +232,8 @@ export function SaleCreateForm({ onSuccess }: SaleCreateFormProps) {
         </div>
 
         <div className="flex justify-end">
-          <Button type="submit" disabled={isLoading}>
-            Créer
+          <Button type="submit" disabled={isLoading || isLoadingProducts}>
+            {isLoading ? 'Création...' : 'Créer'}
           </Button>
         </div>
       </form>
