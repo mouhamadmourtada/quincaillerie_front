@@ -1,4 +1,4 @@
-export const API_URL = 'http://quincaillerie.mcarred.sn:8000/api';
+export const API_URL = 'localhost:3005/api';
 
 export const getAuthHeader = () => {
     const token = localStorage.getItem('token');
