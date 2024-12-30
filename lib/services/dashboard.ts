@@ -68,6 +68,7 @@ export async function getDashboardStats(): Promise<DashboardStats> {
           description: 'Marteau professionnel',
           categoryId: '1',
           stock: 25,
+          supplierId: '1'
         },
         quantity: 50,
         revenue: 75000,
@@ -80,6 +81,7 @@ export async function getDashboardStats(): Promise<DashboardStats> {
           description: 'Set de tournevis',
           categoryId: '1',
           stock: 15,
+          supplierId: '2'
         },
         quantity: 45,
         revenue: 36000,
@@ -92,6 +94,7 @@ export async function getDashboardStats(): Promise<DashboardStats> {
           description: 'Jeu de clés',
           categoryId: '2',
           stock: 30,
+          supplierId: '3'
         },
         quantity: 30,
         revenue: 60000,
@@ -100,17 +103,25 @@ export async function getDashboardStats(): Promise<DashboardStats> {
     recentSales: [
       {
         id: '1',
-        date: new Date().toISOString(),
-        total: 5000,
-        status: 'completed',
+        saleDate: new Date(),
+        totalAmount: 5000,
+        status: 'PAID',
         items: [],
+        customerName: '',
+        customerPhone: '',
+        paymentDate: null,
+        paymentType: 'CASH'
       },
       {
         id: '2',
-        date: new Date(Date.now() - 86400000).toISOString(),
-        total: 3000,
-        status: 'completed',
+        saleDate: new Date(Date.now() - 86400000),
+        totalAmount: 3000,
+        status: 'PAID',
         items: [],
+        customerName: '',
+        customerPhone: '',
+        paymentDate: null,
+        paymentType: 'CASH'
       },
     ],
     salesByMonth: [

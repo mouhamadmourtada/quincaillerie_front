@@ -1,7 +1,7 @@
 import { API_URL, getAuthHeader } from '@/lib/config';
-import { User, CreateUserData, UpdateUserData } from '@/types/user';
+import { User, CreateUserDto, UpdateUserDto, ResetPasswordDto } from '@/types/user';
 
-interface ResetPasswordDto {
+interface ResetPasswordRequest {
   userId: string;
   newPassword: string;
 }
@@ -33,7 +33,7 @@ export class UserService {
     return response.json();
   }
 
-  static async createUser(data: CreateUserData): Promise<User> {
+  static async createUser(data: CreateUserDto): Promise<User> {
     const response = await fetch(`${API_URL}/users`, {
       method: 'POST',
       headers: getAuthHeader(),
@@ -48,7 +48,7 @@ export class UserService {
     return response.json();
   }
 
-  static async updateUser(id: string, data: UpdateUserData): Promise<User> {
+  static async updateUser(id: string, data: UpdateUserDto): Promise<User> {
     const response = await fetch(`${API_URL}/users/${id}`, {
       method: 'PUT',
       headers: getAuthHeader(),
@@ -75,11 +75,11 @@ export class UserService {
     }
   }
 
-  static async resetPassword(userId: string, newPassword: string): Promise<void> {
+  static async resetPassword(data: ResetPasswordRequest): Promise<void> {
     const response = await fetch(`${API_URL}/auth/reset-password`, {
       method: 'POST',
       headers: getAuthHeader(),
-      body: JSON.stringify({ userId, newPassword }),
+      body: JSON.stringify(data),
     });
 
     if (!response.ok) {

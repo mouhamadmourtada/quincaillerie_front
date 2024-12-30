@@ -26,7 +26,6 @@ import { Plus, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
-import { showToast } from '@/lib/toast';
 
 const saleItemSchema = z.object({
   productId: z.string().min(1, 'Produit requis'),
@@ -45,6 +44,18 @@ type SaleFormValues = z.infer<typeof saleSchema>;
 
 interface SaleCreateFormProps {
   onSuccess: () => void;
+}
+
+interface CreateSaleData {
+  customerName: string;
+  customerPhone: string;
+  paymentType: 'CASH' | 'CARD' | 'TRANSFER';
+  items: {
+    productId: string;
+    quantity: number;
+    unitPrice: number;
+  }[];
+  status: 'PENDING';
 }
 
 export function SaleCreateForm({ onSuccess }: SaleCreateFormProps) {
@@ -70,29 +81,35 @@ export function SaleCreateForm({ onSuccess }: SaleCreateFormProps) {
   const onSubmit = async (values: SaleFormValues) => {
     try {
       setIsLoading(true);
-      const totalAmount = values.items.reduce(
-        (sum, item) => sum + item.quantity * item.unitPrice,
-        0
-      );
 
-      await SaleService.createSale({
-        ...values,
-        totalAmount,
-        saleDate: new Date(),
-        paymentDate: null,
+      const saleData: CreateSaleData = {
+        customerName: values.customerName,
+        customerPhone: values.customerPhone,
+        paymentType: values.paymentType,
+        items: values.items.map((item) => ({
+          productId: item.productId,
+          quantity: item.quantity,
+          unitPrice: item.unitPrice,
+        })),
         status: 'PENDING',
-      });
-      toast(showToast.success({
+      };
+
+      await SaleService.createSale(saleData);
+
+      toast({
+        variant: 'default',
         title: 'Vente créée avec succès',
         description: 'La nouvelle vente a été enregistrée'
-      }));
+      });
+      
       onSuccess();
     } catch (error) {
       console.error('Failed to create sale:', error);
-      toast(showToast.error({
+      toast({
+        variant: 'destructive',
         title: 'Erreur',
-        description: error instanceof Error ? error.message : 'Une erreur est survenue lors de la création'
-      }));
+        description: error instanceof Error ? error.message : 'Une erreur est survenue lors de la création de la vente',
+      });
     } finally {
       setIsLoading(false);
     }

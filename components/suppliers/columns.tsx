@@ -4,6 +4,7 @@ import { ColumnDef } from '@tanstack/react-table';
 import { Supplier } from '@/types/supplier';
 import { Button } from '@/components/ui/button';
 import { Eye, Pencil } from 'lucide-react';
+import { TableMeta } from '@/types/table';
 
 export const columns: ColumnDef<Supplier>[] = [
   {
@@ -26,7 +27,8 @@ export const columns: ColumnDef<Supplier>[] = [
     id: 'actions',
     cell: ({ row, table }) => {
       const supplier = row.original;
-      const { onView, onEdit } = table.options.meta || {};
+      const meta = table.options.meta as TableMeta<Supplier>;
+      const { onView, onEdit } = meta || {};
       
       return (
         <div className="flex gap-2">

@@ -1,10 +1,16 @@
 export interface User {
   id: string;
   email: string;
+  name: string;
   firstname: string;
   lastname: string;
   date_naissance: Date;
   lieu_naissance: string;
+  birthDate?: string;
+  phoneNumber?: string;
+  address?: string;
+  city?: string;
+  country?: string;
   role: 'admin' | 'user';
   isActive: boolean;
   username: string;

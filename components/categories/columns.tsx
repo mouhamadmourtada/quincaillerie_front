@@ -2,10 +2,15 @@
 
 import { ColumnDef } from '@tanstack/react-table';
 import { Category } from '@/types/category';
+import { TableMeta } from '@/types/table';
 import { Button } from '@/components/ui/button';
 import { Eye, Pencil } from 'lucide-react';
 
-export const columns: ColumnDef<Category>[] = [
+type CategoryColumnDef = ColumnDef<Category> & {
+  meta?: TableMeta<Category>;
+};
+
+export const columns: CategoryColumnDef[] = [
   {
     accessorKey: 'name',
     header: 'Nom',
@@ -18,21 +23,21 @@ export const columns: ColumnDef<Category>[] = [
     id: 'actions',
     cell: ({ row, table }) => {
       const category = row.original;
-      const { onView, onEdit } = table.options.meta || {};
+      const meta = table.options.meta as TableMeta<Category>;
       
       return (
         <div className="flex gap-2">
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => onView?.(category)}
+            onClick={() => meta?.onView?.(category)}
           >
             <Eye className="h-4 w-4" />
           </Button>
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => onEdit?.(category)}
+            onClick={() => meta?.onEdit?.(category)}
           >
             <Pencil className="h-4 w-4" />
           </Button>

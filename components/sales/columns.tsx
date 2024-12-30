@@ -98,9 +98,9 @@ export const columns: ColumnDef<Sale>[] = [
         <Badge
           variant={
             status === 'PAID'
-              ? 'success'
+              ? 'secondary'
               : status === 'PENDING'
-              ? 'warning'
+              ? 'outline'
               : 'destructive'
           }
         >
@@ -116,10 +116,47 @@ export const columns: ColumnDef<Sale>[] = [
   {
     id: 'actions',
     cell: ({ row }) => {
+      const sale = row.original;
+
+      const handleDelete = async () => {
+        try {
+          const response = await fetch(`/api/sales/${sale.id}`, {
+            method: 'DELETE',
+          });
+          
+          if (!response.ok) {
+            throw new Error('Erreur lors de la suppression');
+          }
+
+          window.location.reload();
+        } catch (error) {
+          console.error('Error:', error);
+        }
+      };
+
       return (
         <DataTableRowActions
           row={row}
-          actions={row.original.actions}
+          actions={[
+            {
+              label: 'Voir',
+              onClick: () => {
+                const event = new CustomEvent('view-sale', { detail: sale });
+                window.dispatchEvent(event);
+              }
+            },
+            {
+              label: 'Modifier',
+              onClick: () => {
+                const event = new CustomEvent('edit-sale', { detail: sale });
+                window.dispatchEvent(event);
+              }
+            },
+            {
+              label: 'Supprimer',
+              onClick: handleDelete
+            }
+          ]}
         />
       );
     },

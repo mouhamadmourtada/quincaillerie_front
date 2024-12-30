@@ -37,7 +37,13 @@ export function ProductTable() {
   const fetchProducts = async () => {
     try {
       const data = await ProductService.getProducts();
-      setProducts(data);
+      // Ensure data is correctly typed
+      const typedData: Product[] = data.map(product => ({
+        ...product,
+        id: String(product.id), // Ensure id is a string
+        categoryId: String(product.categoryId), // Ensure categoryId is a string
+      }));
+      setProducts(typedData);
     } catch (error) {
       toast({
         variant: 'destructive',
@@ -113,7 +119,7 @@ export function ProductTable() {
               </TableCell>
               <TableCell>{(product.price || 0).toFixed(2)} €</TableCell>
               <TableCell>
-                <Badge variant={product.stock > 10 ? 'success' : 'destructive'}>
+                <Badge variant={product.stock > 10 ? 'secondary' : 'destructive'}>
                   {product.stock}
                 </Badge>
               </TableCell>
@@ -143,7 +149,12 @@ export function ProductTable() {
           product={editingProduct}
           open={true}
           onClose={() => setEditingProduct(null)}
-          onSaved={handleProductSaved}
+          mode="edit"
+          onSuccess={handleProductSaved}
+          categories={[
+            { id: "1", name: 'Category 1' },
+            { id: "2", name: 'Category 2' },
+          ]}
         />
       )}
 

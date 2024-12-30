@@ -142,7 +142,10 @@ export const SaleService = {
   async updateSale(id: string, data: Partial<Sale>): Promise<Sale> {
     const response = await fetch(`${API_URL}/sales/${id}`, {
       method: 'PATCH',
-      headers: getAuthHeader(),
+      headers: {
+        ...getAuthHeader(),
+        'Content-Type': 'application/json',
+      },
       body: JSON.stringify(data),
     });
 

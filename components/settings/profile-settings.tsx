@@ -41,7 +41,7 @@ const profileFormSchema = z.object({
   address: z.string().optional(),
   city: z.string().optional(),
   country: z.string().optional(),
-  role: z.string().optional(),
+  role: z.string(),
   createdAt: z.string().optional(),
 });
 
@@ -98,13 +98,13 @@ export function ProfileSettings() {
           profileForm.reset({
             name: currentUser.name,
             email: currentUser.email,
-            birthDate: currentUser.birthDate || '',
-            phoneNumber: currentUser.phoneNumber || '',
-            address: currentUser.address || '',
-            city: currentUser.city || '',
-            country: currentUser.country || '',
-            role: currentUser.role || '',
-            createdAt: currentUser.createdAt ? format(new Date(currentUser.createdAt), 'dd MMMM yyyy', { locale: fr }) : '',
+            birthDate: '',
+            phoneNumber: '',
+            address: '',
+            city: '',
+            country: '',
+            role: currentUser.role,
+            createdAt: '',
           });
         }
       } catch (error) {

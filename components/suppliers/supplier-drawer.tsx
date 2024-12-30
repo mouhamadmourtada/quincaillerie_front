@@ -19,7 +19,6 @@ import { Textarea } from '@/components/ui/textarea';
 import { Supplier } from '@/types/supplier';
 import { SupplierService } from '@/services/supplier-service';
 import { useToast } from '@/hooks/use-toast';
-import { showToast } from '@/lib/toast';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -43,7 +42,16 @@ const supplierSchema = z.object({
   email: z.string().email('Email invalide'),
   phone: z.string().min(10, 'Le numéro de téléphone doit contenir au moins 10 caractères'),
   address: z.string().min(5, 'L\'adresse doit contenir au moins 5 caractères'),
+  type: z.string().optional(),
+  siret: z.string().optional(),
+  sector: z.string().optional(),
+  preferredPaymentMethod: z.string().optional(),
+  city: z.string().optional(),
+  country: z.string().optional(),
+  companyName: z.string().optional(),
 });
+
+type SupplierFormValues = z.infer<typeof supplierSchema>;
 
 interface SupplierDrawerProps {
   open: boolean;
@@ -63,17 +71,23 @@ export function SupplierDrawer({
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
-  const form = useForm<z.infer<typeof supplierSchema>>({
+  const form = useForm<SupplierFormValues>({
     resolver: zodResolver(supplierSchema),
     defaultValues: {
       name: supplier?.name || '',
       email: supplier?.email || '',
       phone: supplier?.phone || '',
       address: supplier?.address || '',
+      type: supplier?.type || '',
+      siret: supplier?.siret || '',
+      sector: supplier?.sector || '',
+      preferredPaymentMethod: supplier?.preferredPaymentMethod || '',
+      city: supplier?.city || '',
+      country: supplier?.country || '',
+      companyName: supplier?.companyName || '',
     },
   });
 
-  // Mettre à jour les valeurs du formulaire lorsque le fournisseur change
   useEffect(() => {
     if (supplier && (mode === 'edit' || mode === 'view')) {
       form.reset({
@@ -81,6 +95,13 @@ export function SupplierDrawer({
         email: supplier.email,
         phone: supplier.phone,
         address: supplier.address,
+        type: supplier.type || '',
+        siret: supplier.siret || '',
+        sector: supplier.sector || '',
+        preferredPaymentMethod: supplier.preferredPaymentMethod || '',
+        city: supplier.city || '',
+        country: supplier.country || '',
+        companyName: supplier.companyName || '',
       });
     } else {
       form.reset({
@@ -88,34 +109,44 @@ export function SupplierDrawer({
         email: '',
         phone: '',
         address: '',
+        type: '',
+        siret: '',
+        sector: '',
+        preferredPaymentMethod: '',
+        city: '',
+        country: '',
+        companyName: '',
       });
     }
   }, [supplier, mode, form]);
 
-  const handleSubmit = async (values: z.infer<typeof supplierSchema>) => {
+  const handleSubmit = async (values: SupplierFormValues) => {
     try {
       setIsLoading(true);
       if (mode === 'create') {
         await SupplierService.createSupplier(values);
-        toast(showToast.success({
+        toast({
+          variant: 'default',
           title: 'Fournisseur créé avec succès',
           description: 'Le nouveau fournisseur a été ajouté'
-        }));
-      } else if (mode === 'edit') {
-        await SupplierService.updateSupplier(supplier!.id, values);
-        toast(showToast.success({
+        });
+      } else if (mode === 'edit' && supplier) {
+        await SupplierService.updateSupplier(supplier.id, values);
+        toast({
+          variant: 'default',
           title: 'Fournisseur modifié avec succès',
           description: 'Les modifications ont été enregistrées'
-        }));
+        });
       }
       onSuccess();
       onClose();
     } catch (error) {
       console.error('Failed to save supplier:', error);
-      toast(showToast.error({
+      toast({
+        variant: 'destructive',
         title: 'Erreur',
         description: error instanceof Error ? error.message : 'Une erreur est survenue lors de l\'enregistrement'
-      }));
+      });
     } finally {
       setIsLoading(false);
     }

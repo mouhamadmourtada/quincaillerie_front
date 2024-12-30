@@ -14,12 +14,12 @@ import { PageHeader } from '@/components/page-header';
 export default function ProductsPage() {
   const { products, isLoading: isLoadingProducts, refresh: refreshProducts } = useProducts();
   const { categories, isLoading: isLoadingCategories } = useCategories();
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [selectedProduct, setSelectedProduct] = useState<Product | undefined>(undefined);
   const [drawerMode, setDrawerMode] = useState<'create' | 'edit' | 'view'>('create');
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
   const handleCreate = () => {
-    setSelectedProduct(null);
+    setSelectedProduct(undefined);
     setDrawerMode('create');
     setIsDrawerOpen(true);
   };
@@ -38,7 +38,7 @@ export default function ProductsPage() {
 
   const handleCloseDrawer = () => {
     setIsDrawerOpen(false);
-    setSelectedProduct(null);
+    setSelectedProduct(undefined);
   };
 
   const handleSuccess = () => {

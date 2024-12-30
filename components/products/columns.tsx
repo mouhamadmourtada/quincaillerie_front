@@ -6,6 +6,7 @@ import { formatCurrency } from '@/lib/formatters';
 import { Button } from '@/components/ui/button';
 import { Eye, Pencil } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { TableMeta } from '@/types/table';
 
 export const columns: ColumnDef<Product>[] = [
   {
@@ -32,7 +33,7 @@ export const columns: ColumnDef<Product>[] = [
     cell: ({ getValue }) => {
       const stock = getValue<number>();
       return (
-        <Badge variant={stock > 10 ? 'success' : 'destructive'}>
+        <Badge variant={stock > 10 ? 'default' : 'destructive'}>
           {stock}
         </Badge>
       );
@@ -42,21 +43,21 @@ export const columns: ColumnDef<Product>[] = [
     id: 'actions',
     cell: ({ row, table }) => {
       const product = row.original;
-      const { onView, onEdit } = table.options.meta || {};
+      const meta = table.options.meta as TableMeta<Product>;
       
       return (
         <div className="flex gap-2">
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => onView?.(product)}
+            onClick={() => meta?.onView?.(product)}
           >
             <Eye className="h-4 w-4" />
           </Button>
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => onEdit?.(product)}
+            onClick={() => meta?.onEdit?.(product)}
           >
             <Pencil className="h-4 w-4" />
           </Button>

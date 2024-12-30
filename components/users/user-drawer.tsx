@@ -4,11 +4,25 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sh
 import { UserCreateForm } from './forms/user-create-form';
 import { UserEditForm } from './forms/user-edit-form';
 import { UserDetails } from './user-details';
-import type { User } from '@/types/user';
+import type { User, CreateUserDto, UpdateUserDto } from '@/types/user';
 import { useToast } from '@/hooks/use-toast';
-import { showToast } from '@/lib/toast';
 import { useState } from 'react';
 import { UserService } from '@/services/user-service';
+import { z } from 'zod';
+
+const userFormSchema = z.object({
+  firstname: z.string().min(2, 'Le prénom doit contenir au moins 2 caractères'),
+  lastname: z.string().min(2, 'Le nom doit contenir au moins 2 caractères'),
+  email: z.string().email('Email invalide'),
+  password: z.string().min(6, 'Le mot de passe doit contenir au moins 6 caractères'),
+  date_naissance: z.string().min(1, 'La date de naissance est requise'),
+  lieu_naissance: z.string().min(2, 'Le lieu de naissance doit contenir au moins 2 caractères'),
+  role: z.enum(['admin', 'user'], {
+    required_error: 'Veuillez sélectionner un rôle',
+  }),
+});
+
+type UserFormValues = z.infer<typeof userFormSchema>;
 
 interface UserDrawerProps {
   user?: User;
@@ -25,9 +39,10 @@ export function UserDrawer({ user, open, onClose, onSaved, mode }: UserDrawerPro
   const handleCreateSubmit = async (formData: UserFormValues) => {
     try {
       setIsLoading(true);
-      const userData = {
+      const userData: CreateUserDto = {
         ...formData,
         username: formData.email,
+        date_naissance: new Date(formData.date_naissance),
       };
       
       console.log('Creating user with data:', userData);
@@ -47,13 +62,13 @@ export function UserDrawer({ user, open, onClose, onSaved, mode }: UserDrawerPro
         description: error instanceof Error ? error.message : 'Une erreur est survenue lors de la création',
         variant: 'destructive'
       });
-      throw error; // Propager l'erreur pour que le formulaire puisse la gérer
+      throw error;
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleEditSubmit = async (formData: any) => {
+  const handleEditSubmit = async (formData: UpdateUserDto) => {
     try {
       setIsLoading(true);
       

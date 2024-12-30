@@ -23,7 +23,7 @@ import {
 import { UserService } from '@/services/user-service';
 import { useToast } from '@/hooks/use-toast';
 import { showToast } from '@/lib/toast';
-import { User } from '@/types/user';
+import { User, UpdateUserDto } from '@/types/user';
 import { format, parseISO } from 'date-fns';
 
 const userFormSchema = z.object({
@@ -42,7 +42,7 @@ type UserFormValues = z.infer<typeof userFormSchema>;
 
 interface UserEditFormProps {
   user: User;
-  onSaved: () => void;
+  onSaved: (formData: UpdateUserDto) => Promise<void>;
 }
 
 export function UserEditForm({ user, onSaved }: UserEditFormProps) {
@@ -92,7 +92,7 @@ export function UserEditForm({ user, onSaved }: UserEditFormProps) {
         description: 'Les modifications ont été enregistrées',
         variant: 'success'
       });
-      onSaved();
+      onSaved(userData);
     } catch (error) {
       console.error('Error:', error);
       toast({

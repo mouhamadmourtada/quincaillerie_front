@@ -1,9 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { DataTable } from '@/components/ui/data-table';
+import { DataTable } from '@/components/sales/data-table';
 import { columns } from '@/components/sales/columns';
 import { useSales } from '@/hooks/use-sales';
 import { Sale } from '@/types/sale';
@@ -17,6 +17,24 @@ export default function SalesPage() {
   const [selectedSale, setSelectedSale] = useState<Sale | null>(null);
   const [drawerMode, setDrawerMode] = useState<'create' | 'edit' | 'view'>('create');
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+
+  useEffect(() => {
+    const handleViewSale = (event: CustomEvent<Sale>) => {
+      handleView(event.detail);
+    };
+
+    const handleEditSale = (event: CustomEvent<Sale>) => {
+      handleEdit(event.detail);
+    };
+
+    window.addEventListener('view-sale', handleViewSale as EventListener);
+    window.addEventListener('edit-sale', handleEditSale as EventListener);
+
+    return () => {
+      window.removeEventListener('view-sale', handleViewSale as EventListener);
+      window.removeEventListener('edit-sale', handleEditSale as EventListener);
+    };
+  }, []);
 
   const handleCreate = () => {
     setSelectedSale(null);

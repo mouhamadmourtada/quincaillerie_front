@@ -90,7 +90,7 @@ export function Header() {
                 <DropdownMenuItem>
                   <Settings className="mr-2 h-4 w-4" />
                   <span>
-                    <Link href="dashboard/settings">
+                    <Link href="settings">
                       Paramètres
                     </Link>
                   </span>

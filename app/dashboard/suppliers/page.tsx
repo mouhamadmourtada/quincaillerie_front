@@ -13,12 +13,12 @@ import { PageHeader } from '@/components/page-header';
 
 export default function SuppliersPage() {
   const { suppliers, isLoading, refresh: refreshSuppliers } = useSuppliers();
-  const [selectedSupplier, setSelectedSupplier] = useState<Supplier | null>(null);
+  const [selectedSupplier, setSelectedSupplier] = useState<Supplier | undefined>(undefined);
   const [drawerMode, setDrawerMode] = useState<'create' | 'edit' | 'view'>('create');
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
   const handleCreate = () => {
-    setSelectedSupplier(null);
+    setSelectedSupplier(undefined);
     setDrawerMode('create');
     setIsDrawerOpen(true);
   };
@@ -37,7 +37,7 @@ export default function SuppliersPage() {
 
   const handleCloseDrawer = () => {
     setIsDrawerOpen(false);
-    setSelectedSupplier(null);
+    setSelectedSupplier(undefined);
   };
 
   const handleSuccess = () => {

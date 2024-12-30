@@ -22,7 +22,6 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { SaleService } from '@/services/sale-service';
-import { showToast } from '@/lib/toast';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 
@@ -62,19 +61,21 @@ export function SaleDetailsTable({ sale, onUpdate }: SaleDetailsTableProps) {
         paymentDate: new Date(),
       });
       
-      toast(showToast.success({
+      toast({
+        variant: 'default',
         title: 'Paiement enregistré avec succès',
         description: 'La vente a été marquée comme payée'
-      }));
+      });
       
       setIsPaymentModalOpen(false);
       if (onUpdate) onUpdate();
     } catch (error) {
       console.error('Error:', error);
-      toast(showToast.error({
+      toast({
+        variant: 'destructive',
         title: 'Erreur de paiement',
         description: error instanceof Error ? error.message : 'Une erreur est survenue lors du paiement'
-      }));
+      });
     } finally {
       setIsProcessing(false);
     }
@@ -85,18 +86,20 @@ export function SaleDetailsTable({ sale, onUpdate }: SaleDetailsTableProps) {
       setIsProcessing(true);
       await SaleService.cancelSale(sale.id);
       
-      toast(showToast.success({
+      toast({
+        variant: 'default',
         title: 'Vente annulée avec succès',
         description: 'La vente a été annulée'
-      }));
+      });
       
       if (onUpdate) onUpdate();
     } catch (error) {
       console.error('Error:', error);
-      toast(showToast.error({
+      toast({
+        variant: 'destructive',
         title: 'Erreur d\'annulation',
         description: error instanceof Error ? error.message : 'Une erreur est survenue lors de l\'annulation'
-      }));
+      });
     } finally {
       setIsProcessing(false);
     }
@@ -180,8 +183,8 @@ export function SaleDetailsTable({ sale, onUpdate }: SaleDetailsTableProps) {
                 <tr className="border-b">
                   <td className="py-2 font-medium">Statut</td>
                   <td>
-                    <Badge 
-                      variant={sale.status === 'PAID' ? 'success' : sale.status === 'CANCELLED' ? 'destructive' : 'default'}
+                    <Badge
+                      variant={sale.status === 'PAID' ? 'secondary' : sale.status === 'CANCELLED' ? 'destructive' : 'default'}
                     >
                       {sale.status === 'PAID' ? 'Payé' : sale.status === 'CANCELLED' ? 'Annulé' : 'En attente'}
                     </Badge>

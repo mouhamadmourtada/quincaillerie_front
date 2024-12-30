@@ -45,7 +45,7 @@ export function ResetPasswordForm({ userId, onSuccess }: ResetPasswordFormProps)
 
   const onSubmit = async (data: ResetPasswordFormValues) => {
     try {
-      await UserService.resetPassword(userId, data.newPassword);
+      await UserService.resetPassword({ userId, newPassword: data.newPassword });
       toast({
         title: 'Mot de passe réinitialisé avec succès',
         variant: 'success'

@@ -43,10 +43,10 @@ export function UserTable() {
       setUsers(data);
     } catch (error) {
       console.error('Error fetching users:', error);
-      toast(showToast.error({
+      showToast.error({
         title: 'Erreur',
         description: 'Impossible de récupérer la liste des utilisateurs'
-      }));
+      });
     } finally {
       setIsLoading(false);
     }
@@ -79,17 +79,17 @@ export function UserTable() {
 
     try {
       await UserService.deleteUser(userToDelete.id);
-      toast(showToast.success({
+      showToast.success({
         title: 'Utilisateur supprimé avec succès',
         description: 'L\'utilisateur a été supprimé de la base de données'
-      }));
+      });
       fetchUsers();
     } catch (error) {
       console.error('Error:', error);
-      toast(showToast.error({
+      showToast.error({
         title: 'Erreur',
         description: 'Une erreur est survenue lors de la suppression'
-      }));
+      });
     } finally {
       setUserToDelete(null);
     }
@@ -129,7 +129,7 @@ export function UserTable() {
                   </Badge>
                 </TableCell>
                 <TableCell>
-                  <Badge variant={user.isActive === true ? 'success' : 'destructive'}>
+                  <Badge variant={user.isActive === true ? 'secondary' : 'destructive'}>
                     {user.isActive === true ? 'Actif' : 'Inactif'}
                   </Badge>
                 </TableCell>

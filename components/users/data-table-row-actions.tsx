@@ -90,7 +90,7 @@ export function DataTableRowActions({
             <AlertDialogTitle>Êtes-vous sûr ?</AlertDialogTitle>
             <AlertDialogDescription>
               Cette action ne peut pas être annulée. Cela supprimera définitivement
-              l&apos;utilisateur {user.firstName} {user.lastName}.
+              l&apos;utilisateur {user.firstname} {user.lastname}.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

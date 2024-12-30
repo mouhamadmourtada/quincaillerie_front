@@ -22,7 +22,6 @@ import {
 } from '@/components/ui/select';
 import { SaleService } from '@/services/sale-service';
 import { useToast } from '@/hooks/use-toast';
-import { showToast } from '@/lib/toast';
 
 interface SaleDetailsProps {
   sale: Sale;
@@ -62,19 +61,21 @@ export function SaleDetails({ sale, onUpdate }: SaleDetailsProps) {
         paymentDate: new Date(),
       });
       
-      toast(showToast.success({
+      toast({
+        variant: 'default',
         title: 'Paiement enregistré avec succès',
         description: 'La vente a été marquée comme payée'
-      }));
+      });
       
       setIsPaymentModalOpen(false);
       if (onUpdate) onUpdate();
     } catch (error) {
       console.error('Error:', error);
-      toast(showToast.error({
+      toast({
+        variant: 'destructive',
         title: 'Erreur',
         description: error instanceof Error ? error.message : 'Une erreur est survenue lors du paiement'
-      }));
+      });
     } finally {
       setIsProcessing(false);
     }
@@ -102,7 +103,7 @@ export function SaleDetails({ sale, onUpdate }: SaleDetailsProps) {
           <div>
             <span className="font-medium">Statut:</span>
             <Badge 
-              variant={sale.status === 'PAID' ? 'success' : sale.status === 'CANCELLED' ? 'destructive' : 'default'}
+              variant={sale.status === 'PAID' ? 'secondary' : sale.status === 'CANCELLED' ? 'destructive' : 'default'}
               className="ml-2"
             >
               {sale.status === 'PAID' ? 'Payé' : sale.status === 'CANCELLED' ? 'Annulé' : 'En attente'}

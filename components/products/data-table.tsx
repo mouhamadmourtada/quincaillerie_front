@@ -12,11 +12,8 @@ interface ProductDataTableProps {
 }
 
 export function DataTable({ columns, data, onEdit, onView }: ProductDataTableProps) {
-
-  
-
   return (
-    <BaseDataTable
+    <BaseDataTable<Product>
       columns={columns}
       data={data}
       meta={{

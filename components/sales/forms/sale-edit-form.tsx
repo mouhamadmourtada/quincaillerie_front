@@ -23,7 +23,6 @@ import {
 } from '@/components/ui/select';
 import { useProducts } from '@/hooks/use-products';
 import { useToast } from '@/hooks/use-toast';
-import { showToast } from '@/lib/toast';
 import { Plus, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { Sale } from '@/types/sale';
@@ -80,21 +79,35 @@ export function SaleEditForm({ sale, onSuccess }: SaleEditFormProps) {
         0
       );
 
-      await SaleService.updateSale(sale.id, {
-        ...values,
-        totalAmount,
-      });
-      toast(showToast.success({
+      const updatedSale: Partial<Sale> = {
+        customerName: values.customerName,
+        customerPhone: values.customerPhone,
+        paymentType: values.paymentType,
+        items: values.items.map(item => ({
+          productId: item.productId,
+          quantity: item.quantity,
+          unitPrice: item.unitPrice,
+          totalPrice: item.quantity * item.unitPrice
+        })),
+        totalAmount
+      };
+
+      await SaleService.updateSale(sale.id, updatedSale);
+      
+      toast({
+        variant: 'default',
         title: 'Vente modifiée avec succès',
         description: 'Les modifications ont été enregistrées'
-      }));
+      });
+      
       onSuccess();
     } catch (error) {
       console.error('Failed to update sale:', error);
-      toast(showToast.error({
+      toast({
+        variant: 'destructive',
         title: 'Erreur',
-        description: error instanceof Error ? error.message : 'Une erreur est survenue lors de la modification'
-      }));
+        description: error instanceof Error ? error.message : 'Une erreur est survenue lors de la modification de la vente',
+      });
     } finally {
       setIsLoading(false);
     }
@@ -187,11 +200,13 @@ export function SaleEditForm({ sale, onSuccess }: SaleEditFormProps) {
                   <FormItem className="flex-1">
                     <Select
                       onValueChange={(value) => handleProductChange(value, index)}
-                      value={field.value}
+                      defaultValue={field.value}
                     >
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Sélectionner un produit" />
+                          <SelectValue placeholder="Sélectionner un produit">
+                            {field.value && products.find(p => p.id === field.value)?.name}
+                          </SelectValue>
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>

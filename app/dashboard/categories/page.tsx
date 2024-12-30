@@ -13,12 +13,12 @@ import { PageHeader } from '@/components/page-header';
 
 export default function CategoriesPage() {
   const { categories, isLoading, refresh: refreshCategories } = useCategories();
-  const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<Category | undefined>(undefined);
   const [drawerMode, setDrawerMode] = useState<'create' | 'edit' | 'view'>('create');
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
   const handleCreate = () => {
-    setSelectedCategory(null);
+    setSelectedCategory(undefined);
     setDrawerMode('create');
     setIsDrawerOpen(true);
   };
@@ -37,7 +37,7 @@ export default function CategoriesPage() {
 
   const handleCloseDrawer = () => {
     setIsDrawerOpen(false);
-    setSelectedCategory(null);
+    setSelectedCategory(undefined);
   };
 
   const handleSuccess = () => {

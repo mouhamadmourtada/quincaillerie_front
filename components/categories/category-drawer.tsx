@@ -19,7 +19,6 @@ import { Textarea } from '@/components/ui/textarea';
 import { Category } from '@/types/category';
 import { CategoryService } from '@/services/category-service';
 import { useToast } from '@/hooks/use-toast';
-import { showToast } from '@/lib/toast';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -90,25 +89,28 @@ export function CategoryDrawer({
       setIsLoading(true);
       if (mode === 'create') {
         await CategoryService.createCategory(values);
-        toast(showToast.success({
+        toast({
           title: 'Catégorie créée avec succès',
-          description: 'La nouvelle catégorie a été ajoutée'
-        }));
+          description: 'La nouvelle catégorie a été ajoutée',
+          variant: 'success'
+        });
       } else if (mode === 'edit') {
         await CategoryService.updateCategory(category!.id, values);
-        toast(showToast.success({
+        toast({
           title: 'Catégorie modifiée avec succès',
-          description: 'Les modifications ont été enregistrées'
-        }));
+          description: 'Les modifications ont été enregistrées',
+          variant: 'success'
+        });
       }
       onSuccess();
       onClose();
     } catch (error) {
       console.error('Failed to save category:', error);
-      toast(showToast.error({
+      toast({
         title: 'Erreur',
-        description: error instanceof Error ? error.message : 'Une erreur est survenue lors de l\'enregistrement'
-      }));
+        description: error instanceof Error ? error.message : 'Une erreur est survenue lors de l\'enregistrement',
+        variant: 'destructive'
+      });
     } finally {
       setIsLoading(false);
     }

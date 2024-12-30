@@ -3,6 +3,7 @@
 import { DataTable as BaseDataTable } from '@/components/ui/data-table';
 import { ColumnDef } from '@tanstack/react-table';
 import { Category } from '@/types/category';
+import { TableMeta } from '@/types/table';
 
 interface CategoryDataTableProps {
   columns: ColumnDef<Category>[];
@@ -13,7 +14,7 @@ interface CategoryDataTableProps {
 
 export function DataTable({ columns, data, onEdit, onView }: CategoryDataTableProps) {
   return (
-    <BaseDataTable
+    <BaseDataTable<Category>
       columns={columns}
       data={data}
       meta={{

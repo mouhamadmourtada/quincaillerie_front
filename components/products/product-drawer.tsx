@@ -58,18 +58,20 @@ export function ProductDrawer({
                 try {
                   setIsLoading(true);
                   await ProductService.createProduct(values);
-                  toast(showToast.success({
+                  toast({
                     title: 'Produit créé avec succès',
-                    description: 'Le nouveau produit a été ajouté'
-                  }));
+                    description: 'Le nouveau produit a été ajouté',
+                    variant: 'default'
+                  });
                   onSuccess();
                   onClose();
                 } catch (error) {
-                  console.error('Failed to save product:', error);
-                  toast(showToast.error({
+                  console.error('Failed to create product:', error);
+                  toast({
                     title: 'Erreur',
-                    description: error instanceof Error ? error.message : 'Une erreur est survenue lors de l\'enregistrement'
-                  }));
+                    description: error instanceof Error ? error.message : 'Une erreur est survenue lors de la création',
+                    variant: 'destructive'
+                  });
                 } finally {
                   setIsLoading(false);
                 }
@@ -79,23 +81,29 @@ export function ProductDrawer({
           {mode === 'edit' && product && (
             <ProductEditForm
               product={product}
-              categories={categories}
               onSuccess={async (values) => {
                 try {
                   setIsLoading(true);
-                  await ProductService.updateProduct(product.id, values);
-                  toast(showToast.success({
+                  await ProductService.updateProduct(product.id, {
+                    name: values.name,
+                    price: values.price,
+                    stock: values.stock,
+                    categoryId: values.category,
+                  });
+                  toast({
                     title: 'Produit modifié avec succès',
-                    description: 'Les modifications ont été enregistrées'
-                  }));
+                    description: 'Les modifications ont été enregistrées',
+                    variant: 'default'
+                  });
                   onSuccess();
                   onClose();
                 } catch (error) {
-                  console.error('Failed to save product:', error);
-                  toast(showToast.error({
+                  console.error('Failed to update product:', error);
+                  toast({
                     title: 'Erreur',
-                    description: error instanceof Error ? error.message : 'Une erreur est survenue lors de l\'enregistrement'
-                  }));
+                    description: error instanceof Error ? error.message : 'Une erreur est survenue lors de l\'enregistrement',
+                    variant: 'destructive'
+                  });
                 } finally {
                   setIsLoading(false);
                 }
@@ -105,8 +113,7 @@ export function ProductDrawer({
           {mode === 'view' && product && (
             <div className="space-y-6">
               <ProductDetails 
-                product={product} 
-                category={categories.find(c => c.id === product.categoryId) || { id: '', name: 'Inconnue' }} 
+                product={product}
               />
             </div>
           )}

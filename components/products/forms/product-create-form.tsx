@@ -33,11 +33,20 @@ const productSchema = z.object({
   stock: z.string().min(1, 'Le stock est requis').transform((val) => Number(val)),
 });
 
-type ProductFormValues = z.infer<typeof productSchema>;
+type ProductFormSchema = z.infer<typeof productSchema>;
+
+interface ProductFormValues {
+  name: string;
+  description: string;
+  categoryId: string;
+  supplierId: string;
+  price: string;
+  stock: string;
+}
 
 interface ProductCreateFormProps {
   categories: Category[];
-  onSuccess: (data: ProductFormValues) => Promise<void>;
+  onSuccess: (data: ProductFormSchema) => Promise<void>;
 }
 
 export function ProductCreateForm({ categories, onSuccess }: ProductCreateFormProps) {
@@ -59,7 +68,7 @@ export function ProductCreateForm({ categories, onSuccess }: ProductCreateFormPr
   const onSubmit = async (data: ProductFormValues) => {
     try {
       setIsLoading(true);
-      await onSuccess(data);
+      await onSuccess(data as unknown as ProductFormSchema);
       form.reset();
     } catch (error) {
       console.error('Error in form submission:', error);

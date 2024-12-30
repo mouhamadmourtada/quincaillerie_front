@@ -32,8 +32,9 @@ export function UserDetails({ user }: UserDetailsProps) {
       .toUpperCase();
   };
 
-  const formatDate = (date: string) => {
-    return format(new Date(date), 'dd MMMM yyyy', { locale: fr });
+  const formatDate = (date: Date | string) => {
+    const dateObj = date instanceof Date ? date : new Date(date);
+    return format(dateObj, 'dd MMMM yyyy', { locale: fr });
   };
 
   return (

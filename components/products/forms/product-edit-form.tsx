@@ -14,34 +14,31 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { Category } from '@/types/category';
 import { Product } from '@/types/product';
-import { ProductService } from '@/services/product-service';
 import { useToast } from '@/hooks/use-toast';
 
 const productSchema = z.object({
   name: z.string().min(2, 'Le nom doit contenir au moins 2 caractères'),
-  category: z.string().min(1, 'Veuillez sélectionner une catégorie'),
-  price: z.string().transform((val) => parseFloat(val)),
-  stock: z.string().transform((val) => parseInt(val)),
+  category: z.string().optional(),
+  price: z.string().min(1, 'Le prix est requis').transform((val) => Number(val)),
+  stock: z.string().min(1, 'Le stock est requis').transform((val) => Number(val)),
 });
 
-type ProductFormValues = z.infer<typeof productSchema>;
+type ProductFormSchema = z.infer<typeof productSchema>;
+
+interface ProductFormValues {
+  name: string;
+  category: string;
+  price: string;
+  stock: string;
+}
 
 interface ProductEditFormProps {
   product: Product;
-  categories: Category[];
-  onSuccess: () => void;
+  onSuccess: (data: ProductFormSchema) => Promise<void>;
 }
 
-export function ProductEditForm({ product, categories, onSuccess }: ProductEditFormProps) {
+export function ProductEditForm({ product, onSuccess }: ProductEditFormProps) {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
@@ -58,21 +55,13 @@ export function ProductEditForm({ product, categories, onSuccess }: ProductEditF
   const onSubmit = async (data: ProductFormValues) => {
     try {
       setIsLoading(true);
-      await ProductService.updateProduct(product.id, {
-        name: data.name,
-        categoryId: data.category,
-        price: data.price,
-        stock: data.stock,
-      });
-      toast({
-        title: 'Succès',
-        description: 'Le produit a été modifié avec succès',
-      });
-      onSuccess();
+      await onSuccess(data as unknown as ProductFormSchema);
+      form.reset();
     } catch (error) {
+      console.error('Error in form submission:', error);
       toast({
         title: 'Erreur',
-        description: 'Une erreur est survenue lors de la modification du produit',
+        description: error instanceof Error ? error.message : 'Une erreur est survenue lors de la modification du produit',
         variant: 'destructive',
       });
     } finally {
@@ -103,20 +92,9 @@ export function ProductEditForm({ product, categories, onSuccess }: ProductEditF
           render={({ field }) => (
             <FormItem>
               <FormLabel>Catégorie</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Sélectionnez une catégorie" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {categories.map((category) => (
-                    <SelectItem key={category.id} value={category.id}>
-                      {category.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <FormControl>
+                <Input placeholder="Catégorie du produit" {...field} />
+              </FormControl>
               <FormMessage />
             </FormItem>
           )}
